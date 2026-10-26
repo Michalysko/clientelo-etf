@@ -1,5 +1,7 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+Datový základ ETF Kompas, ověřené zdroje, metodika investičního modelu a omezení PRIIPs/KID: [dokumentace](docs/etf-data-and-model.md). Výpočetní testy: `npm test` (Node.js 24.12+).
+
 ## Getting Started
 
 First, run the development server:
