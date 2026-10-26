@@ -2,7 +2,36 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 Datový základ ETF Kompas, ověřené zdroje, metodika investičního modelu a omezení PRIIPs/KID: [dokumentace](docs/etf-data-and-model.md). Výpočetní testy: `npm test` (Node.js 24.12+).
 
-Úvodní stránka nyní obsahuje responzivní porovnání ETF a kalkulačku napojenou na tento model. Výchozí scénář 5 000 Kč měsíčně, 20 let a 7 % hrubého ročního výnosu je pouze ilustrativní předpoklad. E-mailové formuláře jsou zatím UI náhled: nic neodesílají ani neukládají a dostupnost doručování výslovně označují jako budoucí. Backend, doručování výpisu/průvodce a konverzní analytika nejsou implementované.
+Úvodní stránka obsahuje responzivní porovnání ETF a kalkulačku napojenou na tento model. Výchozí scénář 5 000 Kč měsíčně, 20 let a 7 % hrubého ročního výnosu je pouze ilustrativní předpoklad. Počáteční investice je podle stávající metodiky 0 Kč. Formuláře mají serverové odesílání HTML reportu a PDF průvodce přes Resend, chráněné Turnstile. Bez úplné konfigurace zůstane odesílání bezpečně nedostupné. Konverzní analytika ani databáze kontaktů nejsou implementované.
+
+## Jednorázové materiály a konfigurace
+
+Podrobné API, ochrany, testy a provozní omezení: [dokumentace doručování](docs/email-delivery.md).
+
+Do lokálního `.env.local` patří následující proměnné. Jejich hodnoty nikdy nevkládejte do repozitáře, chatu nebo logů:
+
+- `RESEND_API_KEY`: serverový klíč Resend.
+- `RESEND_FROM_EMAIL`: adresa nebo `Název <adresa>` na ověřené doméně `etf.michalwebdeveloper.cz`.
+- `TURNSTILE_SECRET_KEY`: soukromý serverový klíč Cloudflare Turnstile.
+- `NEXT_PUBLIC_TURNSTILE_SITE_KEY`: pouze veřejný identifikátor widgetu, nikdy tajný klíč.
+- `APP_ORIGIN`: přesný origin aplikace, lokálně například `http://127.0.0.1:3000`; v produkci vlastní HTTPS origin bez cesty.
+
+V Cloudflare vytvořte Turnstile widget a povolte odpovídající hostname (lokální i budoucí produkční podle použití). Domény v konfiguraci Turnstile nezahrnují port. Po změně konfigurace proveďte nový build/restart; veřejný site key a stav dostupnosti formulářů se připravují při buildu. Na produkčním hostingu je nutné serverové proměnné nastavit samostatně. Testovací bypass klíče Turnstile nejsou pro skutečné odesílání povoleny.
+
+`npm test` používá pouze testovací fakes a mockované poskytovatele, nečte `.env.local` a neodesílá zprávy. Produkční integrační test s Resendem není automatickou součástí testů ani buildu; vyžaduje samostatný souhlas vlastníka a jeho adresu. Přijetí zprávy Resendem znamená přijetí k odeslání, nikoli potvrzení doručení.
+
+PDF je v `output/pdf/etf-od-nuly.pdf` mimo `public/`; doručuje se jen jako e-mailová příloha po validaci formuláře. Má sedm stran a přibližně 127 kB. Reprodukce: `python scripts/build-etf-guide.py` s ReportLab a pypdf a systémovými fonty Arial/Georgia; běžný build již vytvořené PDF pouze přibalí, negeneruje ho. Generátor používá stávající TypeScript model a data pro ilustrační příklad. PDF výstup je potřeba zahrnout do budoucího commitu spolu se zdrojem generátoru.
+
+Na poslední straně průvodce je výzva k návratu do kalkulačky. Veřejná URL dosud není známá: dokument odkazuje na původní stránku slovně a výslovně uvádí doplnění odkazu po nasazení. Před veřejným spuštěním je potřeba upravit závěrečnou výzvu ve zdrojovém skriptu na skutečnou HTTPS adresu kalkulačky, PDF znovu vygenerovat a vizuálně ověřit. Lokální `APP_ORIGIN` se do statického PDF nepřenáší.
+
+## Stav závěrečného auditu (26. 10. 2026)
+
+- `npm test`: 53/53. Testy zahrnují serverovou validaci, přepočet, provider chyby, Siteverify, obsah reportu a nezávislý životní cyklus obou formulářů v izolovaném hook harnessu. Dvojklik a chybové stavy používají pouze mock fetch. Nejde o úplný automatizovaný test skutečného prohlížeče či všech e-mailových klientů.
+- `npm run lint`: bez chyb.
+- `npm run build -- --webpack`: produkční build prošel v prostředí se systémovými certifikáty. V PowerShellu pro důvěru místní certifikační autoritě: `$env:NODE_OPTIONS='--use-system-ca'` před příkazem. Ověřování TLS zůstává zapnuté.
+- Výchozí `npm run build` s Turbopackem lokálně selhává při připojování pomocného PostCSS/CSS procesu (exit 0 před IPC spojením). Přesná příčina předčasného ukončení není prokázána. Závislosti ani výchozí build skript se kvůli tomu nemění; ověřenou alternativou je Webpack.
+- Obě skutečná doručení a obsah materiálů potvrdil vlastník projektu. V závěrečném auditu agent neposílal další zprávy. Poslední drobné textové úpravy reportu a aktualizované PDF byly ověřeny lokálně, nikoli novým doručením.
+- Před veřejným provozem musí vlastník doplnit úplné informace o správci a zpracování údajů podle [provozního seznamu](docs/email-delivery.md#před-veřejným-spuštěním--doplní-vlastník). Současná stránka jejich neúplnost viditelně označuje. Bez distribuovaného limiteru není garantovaný počet požadavků na IP/adresu ani tvrdý rozpočet odesílání.
 
 ## Getting Started
 

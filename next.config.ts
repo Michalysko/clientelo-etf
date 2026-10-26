@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  outputFileTracingIncludes: {
+    "/api/materials/guide": ["./output/pdf/etf-od-nuly.pdf"],
+  },
 };
 
 export default nextConfig;

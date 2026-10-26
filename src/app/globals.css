@@ -115,6 +115,14 @@ thead th { background: var(--dark); position: sticky; top: 0; }
 .form-availability { font-size: 11px; color: var(--muted); line-height: 1.7; margin: 9px 0 0; }
 .form-feedback { color: var(--ink); font-size: 12px; line-height: 1.7; margin: 8px 0 0; }
 .form-feedback:empty { margin: 0; }
+.primary-button:disabled { opacity: .65; cursor: not-allowed; }
+.form-feedback.error { color: var(--error); }
+.form-privacy { color: var(--muted); font-size: 11px; line-height: 1.8; margin: 10px 0; }
+.honeypot { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.turnstile-widget { margin-top: 12px; min-width: 0; }
+.privacy-section { padding-block: 0 40px; }
+.privacy-section h2 { font-size: 20px; }
+.privacy-section p { max-width: 850px; font-size: 12px; line-height: 1.9; color: var(--muted); }
 .calculator-results :focus-visible { outline-color: var(--green); }
 .methodology { padding-inline: 28px; border-top: 1px solid var(--line); }
 .methodology summary { color: var(--muted); }

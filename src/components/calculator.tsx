@@ -3,13 +3,14 @@
 import { useState } from "react";
 import { ETFS } from "@/data/etfs";
 import { compareInvestments, INVESTMENT_LIMITS } from "@/lib/investment";
-import { EmailPreview } from "./email-preview";
+import { EmailForm } from "./email-form";
+import type { DeliveryUiConfig } from "./email-form";
 
 const money = (value: number) => new Intl.NumberFormat("cs-CZ", { style: "currency", currency: "CZK", maximumFractionDigits: 0 }).format(value);
 const percent = (value: number) => new Intl.NumberFormat("cs-CZ", { maximumFractionDigits: 4 }).format(value);
 const parse = (value: string) => /^-?\d+(?:[.,]\d+)?$/.test(value.trim()) ? Number(value.trim().replace(",", ".")) : NaN;
 
-export function Calculator() {
+export function Calculator({ delivery }: { delivery: DeliveryUiConfig }) {
   const [firstTicker, setFirstTicker] = useState("SPY");
   const [secondTicker, setSecondTicker] = useState("SPYM");
   const [amount, setAmount] = useState("5000");
@@ -59,7 +60,7 @@ export function Calculator() {
         {result ? <>
           <div className="difference-box">
             <div><span>Modelovaný rozdíl v konečné hodnotě</span><strong>{difference > 0 && difference < 1 ? "Méně než 1 Kč" : money(difference)}</strong></div>
-            <p>{difference === 0 ? "Při těchto vstupech je modelový výsledek stejný." : `${winner.ticker} má v tomto scénáři vyšší konečnou hodnotu.`} Rozdíl tvoří pouze nákladovost při stejném hrubém výnosu.</p>
+            <p>{difference === 0 ? "Při těchto vstupech je modelový výsledek stejný." : `${winner.ticker} má v tomto scénáři vyšší konečnou hodnotu.`} Rozdíl tvoří pouze nákladovost při stejném hrubém výnosu. Nejde o částku skutečně zaplacených poplatků.</p>
           </div>
           <p className="contributions">Celkem vložíte <strong>{money(result.first.totalContributions)}</strong></p>
           <div className="value-grid"><div><span className="value-label"><i className="chart-key first-key" />{first.ticker}</span><p>{money(result.first.finalValue)}</p></div><div><span className="value-label"><i className="chart-key second-key" />{second.ticker}</span><p>{money(result.second.finalValue)}</p></div></div>
@@ -68,7 +69,7 @@ export function Calculator() {
         </> : <p className="calculation-error" role="status">{modelError || "Doplňte platné hodnoty výše. Výsledek se přepočítá automaticky."}</p>}
         <p className="result-disclaimer">Modelový výpočet, nikoli investiční doporučení. Výnos není zaručen. Vklady na konci měsíce. Bez daní, inflace, kurzových změn a nákladů brokera. <a href="#metodika">Jak počítáme?</a> <a href="#dostupnost">Dostupnost ETF a PRIIPs/KID</a>.</p>
       </div>
-      <div className="report-offer"><p className="eyebrow">VÁŠ SCÉNÁŘ PODROBNĚ</p><p className="report-description">Připravovaný výpis nabídne roční přehled investice, porovnání poplatků obou ETF a předpoklady výpočtu.</p><EmailPreview id="report" buttonText="Zaslat podrobný výpis na e-mail" kind="report" /></div>
+      <div className="report-offer"><p className="eyebrow">VÁŠ SCÉNÁŘ PODROBNĚ</p><p className="report-description">Report v e-mailu obsahuje roční přehled investice, porovnání nákladovosti obou ETF a předpoklady vašeho výpočtu.</p><EmailForm id="report" buttonText="Zaslat podrobný výpis na e-mail" kind="report" delivery={delivery} scenario={result ? {firstTicker, secondTicker, monthlyContribution, years: horizon, grossAnnualReturnPercent, initialInvestment: 0} : null} /></div>
       <details className="methodology" id="metodika"><summary>Metodika a limity výpočtu</summary><p>Měsíční růstový faktor je ((1 + g) × (1 − f))<sup>1/12</sup>, kde g je předpokládaný hrubý roční výnos a f roční nákladovost, obojí převedené z procent na desetinné číslo. Zůstatek nejprve zhodnotíme a poté přičteme měsíční vklad. Nákladovost je zjednodušeně rozložena do celého roku.</p><p>Počítáme od nuly, s konstantním výnosem, reinvestováním a možností zlomkových podílů. Rozdíl zahrnuje i vliv složeného růstu, není součtem skutečně stržených poplatků. Částky zaokrouhlujeme pouze pro zobrazení.</p><p>Model přijímá celé roky 0–{INVESTMENT_LIMITS.maxYears}, vklad do {money(INVESTMENT_LIMITS.maxMonthlyContribution)} a hrubý výnos nad −100 % až do {INVESTMENT_LIMITS.maxGrossAnnualReturnPercent} %. Extrémní výsledky odmítne. Jde o technické limity, nikoli předpoklady trhu.</p></details>
     </section>
   );

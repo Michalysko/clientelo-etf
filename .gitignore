@@ -72,3 +72,7 @@ Thumbs.db
 Desktop.ini
 *.swp
 *.swo
+
+# local PDF rendering and inspection
+/tmp/
+__pycache__/

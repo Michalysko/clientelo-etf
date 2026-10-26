@@ -1,12 +1,15 @@
 import { Calculator } from "@/components/calculator";
-import { EmailPreview } from "@/components/email-preview";
+import { EmailForm } from "@/components/email-form";
+import { TurnstileProvider } from "@/components/turnstile-provider";
 import { ETFS } from "@/data/etfs";
+import { publicDeliveryConfig } from "@/lib/email/config";
 
 const date = (value: string) => new Intl.DateTimeFormat("cs-CZ", { timeZone: "UTC" }).format(new Date(`${value}T00:00:00Z`));
 
 export default function Home() {
+  const delivery = publicDeliveryConfig();
   return (
-    <>
+    <TurnstileProvider enabled={delivery.enabled}>
       <a className="skip-link" href="#obsah">Přejít na obsah</a>
       <header className="site-header wrap">
         <a href="#" className="brand" aria-label="ETF Kompas — úvod">
@@ -29,7 +32,7 @@ export default function Home() {
             <div className="editorial-note"><span className="note-index">01 / PRINCIP</span><p>Výnos trhu neznáme.<br /><strong>Nákladovost porovnat můžeme.</strong></p><p className="small muted">Obě ETF počítáme se stejným hrubým výnosem. Rozdíl v modelu tak tvoří pouze nákladovost.</p></div>
           </div>
           <div className="calculator-column">
-            <Calculator />
+            <Calculator delivery={delivery} />
             <p className="hero-risk small">Modelový výpočet, nikoli investiční doporučení. Výnos není zaručen. Dostupnost amerických ETF pro český retail omezuje PRIIPs/KID. <a href="#dostupnost">Co to znamená?</a></p>
           </div>
         </section>
@@ -51,8 +54,8 @@ export default function Home() {
         </section>
         <section className="guide-section" id="pruvodce" aria-labelledby="guide-title">
           <div className="wrap guide-grid">
-            <div><p className="eyebrow">03 / PRVNÍ KROK NEMUSÍ BÝT VELKÝ</p><h2 id="guide-title">V investování se<br />teprve <em>rozkoukáváte?</em></h2><p>Připravujeme bezplatného, srozumitelného průvodce ETF. Co je index, jak číst nákladovost a na co se ptát před první investicí.</p><ul className="guide-topics"><li>ETF bez finančního žargonu</li><li>Poplatky v souvislostech</li><li>Americké ETF a evropská pravidla</li></ul></div>
-            <div className="guide-offer"><span className="note-index">PRŮVODCE ETF / ZDARMA</span><h3>Nejdřív pochopit.<br />Potom se rozhodnout.</h3><EmailPreview id="guide" buttonText="Chci průvodce zdarma" kind="guide" /></div>
+            <div><p className="eyebrow">03 / PRVNÍ KROK NEMUSÍ BÝT VELKÝ</p><h2 id="guide-title">V investování se<br />teprve <em>rozkoukáváte?</em></h2><p>Získejte zdarma sedmistránkový PDF průvodce „ETF od nuly: 7 věcí, které byste měli vědět před první investicí“. Co je index, jak číst nákladovost a na co se ptát před první investicí.</p><ul className="guide-topics"><li>ETF bez finančního žargonu</li><li>Poplatky v souvislostech</li><li>Americké ETF a evropská pravidla</li></ul></div>
+            <div className="guide-offer"><span className="note-index">PRŮVODCE ETF / ZDARMA</span><h3>Nejdřív pochopit.<br />Potom se rozhodnout.</h3><EmailForm id="guide" buttonText="Chci průvodce zdarma" kind="guide" delivery={delivery} /></div>
           </div>
         </section>
         <section className="disclosures wrap" id="dostupnost" aria-labelledby="disclosures-title">
@@ -62,8 +65,14 @@ export default function Home() {
             <article><h3>Americká ETF a PRIIPs/KID</h3><p>Český retailový investor nemusí mít možnost tato americká ETF koupit. Pro retailovou distribuci je potřeba dokument KID; bez něj bývá nákup u evropských brokerů blokován. Factsheet ani americký prospekt jej nenahrazují. Dostupnost ověřte u svého brokera.</p><a href="https://finance.ec.europa.eu/consumer-finance-and-payments/retail-financial-services/key-information-documents-packaged-retail-and-insurance-based-investment-products-priips_en" target="_blank" rel="noopener noreferrer">Pravidla PRIIPs podle Evropské komise ↗<span className="sr-only">, otevře nové okno</span></a><a href="https://www.lynxbroker.com/service/products-and-regulations/regulations/key-information-document/" target="_blank" rel="noopener noreferrer">Praktické vysvětlení KID od LYNX ↗<span className="sr-only">, otevře nové okno</span></a></article>
           </div>
         </section>
+        <section className="privacy-section wrap" id="osobni-udaje" aria-labelledby="privacy-title">
+          <h2 id="privacy-title">Jednorázový materiál. Žádný automatický odběr.</h2>
+          <p>Zadaný e-mail a u reportu parametry scénáře zpracujeme pro zaslání vyžádaného materiálu. Zprávu a přílohu předáme službě Resend, která pro doručení zpracovává příjemce i obsah e-mailu. V aplikaci nevytváříme databázi kontaktů ani je nezapisujeme do aplikačních logů.</p>
+          <p>Formuláře chrání Cloudflare Turnstile, které při ověření zpracovává technické údaje prohlížeče. Zadáním e-mailu se nepřihlašujete k newsletteru ani ETF Hlídači. <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">Soukromí u Cloudflare ↗</a> · <a href="https://resend.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer">Soukromí u Resend ↗</a></p>
+          <p><strong>Projekt je v přípravě.</strong> Identifikační a kontaktní údaje správce, doby uchovávání a úplné informace o vašich právech doplní provozovatel před veřejným spuštěním.</p>
+        </section>
       </main>
       <footer className="site-footer wrap"><a className="brand" href="#">ETF<span>Kompas</span></a><p>V číslech jasno. V rozhodnutí vlastní směr.</p><span>Vzdělávací projekt · Bez investičního poradenství</span></footer>
-    </>
+    </TurnstileProvider>
   );
 }
