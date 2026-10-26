@@ -1,69 +1,69 @@
-import Image from "next/image";
+import { Calculator } from "@/components/calculator";
+import { EmailPreview } from "@/components/email-preview";
+import { ETFS } from "@/data/etfs";
+
+const date = (value: string) => new Intl.DateTimeFormat("cs-CZ", { timeZone: "UTC" }).format(new Date(`${value}T00:00:00Z`));
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+    <>
+      <a className="skip-link" href="#obsah">Přejít na obsah</a>
+      <header className="site-header wrap">
+        <a href="#" className="brand" aria-label="ETF Kompas — úvod">
+          <svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" /><path d="m21 9-3 10-8 4 3-10z" fill="currentColor" /><circle cx="16" cy="16" r="2" fill="var(--paper)" /></svg>
+          ETF<span>Kompas</span>
+        </a>
+        <nav aria-label="Hlavní navigace">
+          <a href="#kalkulacka">Porovnat ETF <span aria-hidden="true">↗</span></a>
+          <a className="desktop-link" href="#pruvodce">Pro začátečníky</a>
+          <a className="desktop-link" href="#zdroje">Zdroje</a>
+        </nav>
+      </header>
+      <main id="obsah">
+        <section className="hero wrap" aria-labelledby="hero-title">
+          <div className="hero-copy">
+            <p className="eyebrow"><span className="signal" /> MÉNĚ DOHADŮ. VÍCE PŘEHLEDU.</p>
+            <h1 id="hero-title">Stejný index.<br />Jiné poplatky.<br /><em>Jaký je rozdíl?</em></h1>
+            <p className="hero-description">Porovnejte americká ETF na S&amp;P 500. Zjistěte, co mohou průběžné poplatky udělat s vaší investicí za několik desítek let.</p>
+            <a className="text-link hero-jump" href="#kalkulacka">Spočítat vlastní scénář <span aria-hidden="true">↓</span></a>
+            <div className="editorial-note"><span className="note-index">01 / PRINCIP</span><p>Výnos trhu neznáme.<br /><strong>Nákladovost porovnat můžeme.</strong></p><p className="small muted">Obě ETF počítáme se stejným hrubým výnosem. Rozdíl v modelu tak tvoří pouze nákladovost.</p></div>
+          </div>
+          <div className="calculator-column">
+            <Calculator />
+            <p className="hero-risk small">Modelový výpočet, nikoli investiční doporučení. Výnos není zaručen. Dostupnost amerických ETF pro český retail omezuje PRIIPs/KID. <a href="#dostupnost">Co to znamená?</a></p>
+          </div>
+        </section>
+        <section className="fund-section wrap" id="zdroje" aria-labelledby="fund-title">
+          <div className="section-heading"><div><p className="eyebrow">02 / CO VLASTNĚ POROVNÁVÁTE</p><h2 id="fund-title">Čtyři cesty ke stejnému indexu.</h2></div><p>Skutečné údaje od emitentů.<br />Ověřeno {Array.from(new Set(ETFS.map((fund) => fund.verifiedOn))).map(date).join(", ")}, nejde o živá data.</p></div>
+          <div className="fund-grid">
+            {ETFS.map((fund) => (
+              <article className="fund-card" key={fund.ticker} aria-labelledby={`fund-${fund.ticker}`}>
+                <div className="fund-card-top"><h3 id={`fund-${fund.ticker}`}>{fund.ticker}</h3><span className="fund-exchange">{fund.exchange}</span></div>
+                <p className="fund-name">{fund.fullName}</p>
+                <p className="fund-fee">{fund.verificationStatus === "verified" && fund.annualExpenseRatioPercent !== null ? `${new Intl.NumberFormat("cs-CZ", { maximumFractionDigits: 4 }).format(fund.annualExpenseRatioPercent)} %` : "Neověřeno"}<span>ročně · {fund.expenseRatioLabel}</span></p>
+                <dl className="fund-facts"><dt>Zaměření</dt><dd>{fund.index} · velké americké společnosti</dd><dt>Správce / role</dt><dd>{fund.manager}<span>{fund.managerRole}</span></dd></dl>
+                {fund.previousTicker && <p className="small muted">Dříve {fund.previousTicker.ticker}. Změna tickeru {date(fund.previousTicker.changedOn)}.</p>}
+                <a className="source-link" href={fund.sourceUrl} target="_blank" rel="noopener noreferrer">Údaje u emitenta <span aria-hidden="true">↗</span><span className="sr-only"> — {fund.ticker}, otevře nové okno</span></a>
+                <details className="fund-provenance"><summary>Podrobnosti o zdroji</summary><p className="small">Datum podkladu: {fund.sourceAsOf ? date(fund.sourceAsOf) : "přesné datum sazby neuvedeno"}. Ověřeno {date(fund.verifiedOn)}.</p>{fund.additionalSourceUrls.map((url, index) => <a key={url} href={url} target="_blank" rel="noopener noreferrer">Doplňující zdroj {index + 1}<span className="sr-only"> — {fund.ticker}, otevře nové okno</span> ↗</a>)}</details>
+              </article>
+            ))}
+          </div>
+        </section>
+        <section className="guide-section" id="pruvodce" aria-labelledby="guide-title">
+          <div className="wrap guide-grid">
+            <div><p className="eyebrow">03 / PRVNÍ KROK NEMUSÍ BÝT VELKÝ</p><h2 id="guide-title">V investování se<br />teprve <em>rozkoukáváte?</em></h2><p>Připravujeme bezplatného, srozumitelného průvodce ETF. Co je index, jak číst nákladovost a na co se ptát před první investicí.</p><ul className="guide-topics"><li>ETF bez finančního žargonu</li><li>Poplatky v souvislostech</li><li>Americké ETF a evropská pravidla</li></ul></div>
+            <div className="guide-offer"><span className="note-index">PRŮVODCE ETF / ZDARMA</span><h3>Nejdřív pochopit.<br />Potom se rozhodnout.</h3><EmailPreview id="guide" buttonText="Chci průvodce zdarma" kind="guide" /></div>
+          </div>
+        </section>
+        <section className="disclosures wrap" id="dostupnost" aria-labelledby="disclosures-title">
+          <p className="eyebrow">04 / DOBRÉ VĚDĚT PŘEDEM</p><h2 id="disclosures-title">Čísla potřebují kontext.</h2>
+          <div className="disclosure-grid">
+            <article><h3>Model, nikoli předpověď</h3><p>Počítáme s konstantním hrubým výnosem a vkladem na konci každého měsíce. Výnosy se reinvestují. Skutečný vývoj kolísá a investice může ztratit hodnotu. Model nezahrnuje daně, inflaci, změny měnových kurzů, provize ani spread.</p></article>
+            <article><h3>Americká ETF a PRIIPs/KID</h3><p>Český retailový investor nemusí mít možnost tato americká ETF koupit. Pro retailovou distribuci je potřeba dokument KID; bez něj bývá nákup u evropských brokerů blokován. Factsheet ani americký prospekt jej nenahrazují. Dostupnost ověřte u svého brokera.</p><a href="https://finance.ec.europa.eu/consumer-finance-and-payments/retail-financial-services/key-information-documents-packaged-retail-and-insurance-based-investment-products-priips_en" target="_blank" rel="noopener noreferrer">Pravidla PRIIPs podle Evropské komise ↗<span className="sr-only">, otevře nové okno</span></a><a href="https://www.lynxbroker.com/service/products-and-regulations/regulations/key-information-document/" target="_blank" rel="noopener noreferrer">Praktické vysvětlení KID od LYNX ↗<span className="sr-only">, otevře nové okno</span></a></article>
+          </div>
+        </section>
       </main>
-    </div>
+      <footer className="site-footer wrap"><a className="brand" href="#">ETF<span>Kompas</span></a><p>V číslech jasno. V rozhodnutí vlastní směr.</p><span>Vzdělávací projekt · Bez investičního poradenství</span></footer>
+    </>
   );
 }

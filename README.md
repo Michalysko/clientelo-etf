@@ -2,6 +2,8 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 Datový základ ETF Kompas, ověřené zdroje, metodika investičního modelu a omezení PRIIPs/KID: [dokumentace](docs/etf-data-and-model.md). Výpočetní testy: `npm test` (Node.js 24.12+).
 
+Úvodní stránka nyní obsahuje responzivní porovnání ETF a kalkulačku napojenou na tento model. Výchozí scénář 5 000 Kč měsíčně, 20 let a 7 % hrubého ročního výnosu je pouze ilustrativní předpoklad. E-mailové formuláře jsou zatím UI náhled: nic neodesílají ani neukládají a dostupnost doručování výslovně označují jako budoucí. Backend, doručování výpisu/průvodce a konverzní analytika nejsou implementované.
+
 ## Getting Started
 
 First, run the development server:
