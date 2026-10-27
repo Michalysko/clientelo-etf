@@ -2,7 +2,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 Datový základ ETF Kompas, ověřené zdroje, metodika investičního modelu a omezení PRIIPs/KID: [dokumentace](docs/etf-data-and-model.md). Výpočetní testy: `npm test` (Node.js 24.12+).
 
-Úvodní stránka obsahuje responzivní porovnání ETF a kalkulačku napojenou na tento model. Výchozí scénář 5 000 Kč měsíčně, 20 let a 7 % hrubého ročního výnosu je pouze ilustrativní předpoklad. Počáteční investice je podle stávající metodiky 0 Kč. Formuláře mají serverové odesílání HTML reportu a PDF průvodce přes Resend, chráněné Turnstile. Bez úplné konfigurace zůstane odesílání bezpečně nedostupné. Konverzní analytika ani databáze kontaktů nejsou implementované.
+Úvodní stránka obsahuje responzivní porovnání ETF a kalkulačku napojenou na tento model. Výchozí scénář 5 000 Kč měsíčně, 20 let a 7 % hrubého ročního výnosu je pouze ilustrativní předpoklad. Počáteční investice je podle stávající metodiky 0 Kč. Formuláře mají serverové odesílání HTML reportu a PDF průvodce přes Resend, chráněné Turnstile. Bez úplné konfigurace zůstane odesílání bezpečně nedostupné. Konverzní analytika Umami Cloud je volitelná a řízená souhlasem. Databáze kontaktů není implementovaná.
 
 ## Jednorázové materiály a konfigurace
 
@@ -22,7 +22,7 @@ Samostatná veřejná kontaktní položka: `PRIVACY_CONTACT_EMAIL`. Je určena p
 
 Stránka `/ochrana-osobnich-udaju` popisuje osobní nekomerční demo, skutečný tok údajů, poskytovatele a neověřené položky. Jméno správce Michal Růžička bylo výslovně poskytnuto vlastníkem pro zveřejnění; veřejná kontaktní adresa je `privacy@michalwebdeveloper.cz` a její příjem i odesílání ověřil vlastník. Odkaz je u obou formulářů, v informační sekci i patičce. Technický audit a přesný seznam zbývajících podkladů: [revize soukromí](docs/privacy-review.md).
 
-Stránka zatím není právně dokončená pro veřejný sběr údajů: právní základy, konkrétní retence, přenosy a smluvní podmínky účtů vyžadují potvrzení. Zvlášť je třeba ověřit zpracovatelské ujednání pro plánovaný Vercel Hobby; veřejné DPA vymezuje Pro/Enterprise. Nejsou zavedeny preventivní checkbox ani cookie banner. To není tvrzení, že při libovolném budoucím nastavení poskytovatelů souhlas nikdy nebude potřebný. Výpočty, serverové ověření a doručování zůstávají beze změny.
+Stránka zatím není právně dokončená pro veřejný sběr údajů: právní základy, konkrétní retence, přenosy a smluvní podmínky účtů vyžadují potvrzení. Zvlášť je třeba ověřit zpracovatelské ujednání pro plánovaný Vercel Hobby; veřejné DPA vymezuje Pro/Enterprise. Pro jednorázové materiály není zaveden preventivní souhlasový checkbox. Analytika má oddělenou dobrovolnou lištu se stejnocenným povolením a odmítnutím. To není tvrzení, že při libovolném budoucím nastavení poskytovatelů souhlas nikdy nebude potřebný. Výpočty, serverové ověření a doručování zůstávají beze změny.
 
 V Cloudflare vytvořte Turnstile widget a povolte odpovídající hostname (lokální i budoucí produkční podle použití). Domény v konfiguraci Turnstile nezahrnují port. Po změně konfigurace proveďte nový build/restart; veřejný site key a stav dostupnosti formulářů se připravují při buildu. Na produkčním hostingu je nutné serverové proměnné nastavit samostatně. Testovací bypass klíče Turnstile nejsou pro skutečné odesílání povoleny.
 
@@ -75,3 +75,15 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Dobrovolná konverzní analytika (27. 10. 2026)
+
+Implementace, přesné události, whitelist kampaní, limity a postup ověření: [docs/analytics.md](docs/analytics.md). Umami se načte až po souhlasu a jen v produkčním deploymentu na etf-kompas-zeta.vercel.app; localhost a preview neposílají události. Nejsou potřeba nové závislosti ani soukromý Umami klíč. Vlastník potvrdil EU region a Hobby.
+
+V localStorage se pamatuje jen odmítnutí (verze, volba denied, čas), nejvýše 180 dní. Povolení je pouze v paměti otevřeného dokumentu i při klientské navigaci; po reloadu je třeba nový opt-in. Starší uložená povolení se neobnovují. Změna je pod patičkou. Odvolání zavře gate a při úspěšném uložení odmítnutí obnoví stránku (ztratí se rozpracované neodeslané údaje); při chybě zápisu zůstane stránka bez měření s upozorněním. Před souhlasem se nesbírají aktivity pro pozdější odeslání. Umami zpracovává IP/UA a odvozené identifikátory; nejde o zcela anonymní ani výhradně evropské zpracování. Payload neobsahuje e-mail, hash, částky, výnosy, tokeny ani libovolné URL parametry.
+
+Funnel: landing_view → form_view → form_start → form_submit → material_accepted, zvlášť report a guide. Úprava kalkulačky není povinný krok. Pageview a landing_view jsou dva různé záznamy, nesčítají se jako návštěvy. Konverze je přijetí požadavku Resendem, ne doručení nebo nový unikátní kontakt. Opakovaný idempotentní pokus může také vrátit 202. Výsledky reprezentují pouze souhlasící a neblokované prohlížeče.
+
+Budoucí A/B hypotézy: A (nákladovost) může zvýšit konverzi reportu, B (vzdělávání) průvodce. Rozlišení utm_content=ad_a/ad_b a jediná pomocná vlastnost ad_variant. Nejsou to výsledky experimentu. Účet ani reporty nebyly měněny; možnosti filtrování konkrétního funnelu je nutné ručně ověřit, viz dokumentace.
+
+Testy používají fake providery a síť. Volitelný test skutečného vendor trackeru vyžaduje UMAMI_TRACKER_TEST_FILE s dočasným veřejným script.js; spouští jej jen v izolované VM s mock fetch. Bez souboru se tento jeden test přeskočí. Produkční Network a dashboard bude potřeba ověřit po samostatně schváleném deploymentu; tato etapa nic nenasazuje ani neposílá reálné e-maily.

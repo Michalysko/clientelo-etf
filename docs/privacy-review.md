@@ -57,3 +57,21 @@ Do uzavření těchto bodů jde o **nedokončené informace pro veřejný sběr 
 - [Vercel DPA](https://vercel.com/legal/dpa), [Privacy Notice](https://vercel.com/legal/privacy-notice)
 
 Veřejné podklady nevydáváme za potvrzení smluv či nastavení konkrétních účtů.
+
+## Dodatek: dobrovolná analytika — 27. 10. 2026
+
+Původní audit výše zůstává historickým záznamem. Nový kód přidává Umami Cloud až po dobrovolném opt-in; právním základem analytiky je souhlas, nikoli tvrzení o výjimce ze souhlasu. Kalkulačka a doručení nejsou podmíněné. Preference (verze, volba, čas) v localStorage na 180 dní má výhradně účel respektování rozhodnutí. Před souhlasem žádný Umami tracker ani fronta historie; odvolání zavře synchronní filtr a obnoví dokument. Žádosti dříve odeslané nelze zpětně zrušit. Blokované storage je ošetřeno i proti obnovení staršího souhlasu při reloadu pomocí fragmentu analytics-off.
+
+Návštěvnický souhlas se neslučuje se zasláním materiálu, newsletterem ani Hlídačem. E-mailové endpointy/validace/Resend/Turnstile se nemění. Umami dostává jen whitelist událostí a kampaní, nikoli adresu, částky nebo token. Aktuální tracker přesto čte browser metadata/localStorage preference a síť zpřístupňuje IP/UA; používá také paměťový x-umami-cache. Naše sanitizace odstraní výchozí screen/language/id a neužívá identify ani vlastní ID. Bez tvrzení úplné anonymity. Globální meta referrer=no-referrer omezuje HTTP Referer; skutečné produkční požadavky je potřeba zkontrolovat po schváleném nasazení.
+
+Vlastník potvrdil EU region a tarif Hobby. Veřejné podklady uvádějí šest měsíců produkční retence a oddělené zálohy; EU storage není zárukou, že CDN/podpora/logy nepřesáhnou EHP. Umami DPA je součástí podmínek hostované služby; použitelné znění, podprocesory, mechanismy přenosu a případná doplňující opatření zůstávají odpovědností správce. Souhlas neopravuje případné chybějící smluvní záruky. Dřívější otevřené body Resend/Turnstile/Vercel Hobby a retence provozních dat tím nejsou uzavřeny. Hosting Vercel Hobby je již vlastníkem potvrzený, což aktualizovaná veřejná stránka zohledňuje.
+
+Přesná technická konfigurace, primární odkazy a podmínky ověření jsou v [analytics.md](analytics.md). Žádné výsledky reálného měření ani definitivní právní posouzení nebyly vytvořeny.
+
+## Opravy po read-only auditu Umami — 27. 10. 2026
+
+Tento dodatek nahrazuje starší popis persistentního povolení a fragmentového fallbacku výše. Trvale se ukládá pouze odmítnutí na nejvýše 180 dní; po expiraci se při čtení podle možností odstraní. Povolení je pouze v paměti aktuálního dokumentu, platí i při klientské navigaci, ale nové načtení/reload/BFCache návrat vyžadují nové potvrzení. Starší uložené granted záznamy se nikdy neobnovují. Při výpadku zápisu odmítnutí zůstává gate vypnutý v aktuálním dokumentu a UI oznámí chybu; nevynucuje se reload, který by skryl upozornění. Při úspěšné persistenci může reload odstranit vendor runtime.
+
+BroadcastChannel předává jen konstantní zprávu denied mezi kartami stejného originu a doplňuje storage události. Nepřenáší grant, kampaň, osobní údaje ani návštěvnický identifikátor. Izolované karty při blokaci obou kanálů a zápisu nelze spolehlivě okamžitě informovat; musí být odvolány zvlášť nebo zavřeny. Žádná nová stránka však nesmí automaticky obnovit staré povolení.
+
+Atribuce zůstává jen v paměti až po souhlasu. Dokončení starého POST se po změně vstupu zahodí; konverze neputuje k jiné kampani. Žádné nové údaje v serverových API ani analytické identifikátory. Fokus se nejprve podrží do potvrzení skutečné viditelnosti observerem. Dřívější smluvní a právní otevřené otázky zůstávají beze změny. Detailní limity a testy: docs/analytics.md.

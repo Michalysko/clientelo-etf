@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { analytics, trackAnalytics } from "@/lib/analytics";
 import { ETFS } from "@/data/etfs";
 import { compareInvestments, INVESTMENT_LIMITS } from "@/lib/investment";
 import { EmailForm } from "./email-form";
@@ -16,6 +17,15 @@ export function Calculator({ delivery }: { delivery: DeliveryUiConfig }) {
   const [amount, setAmount] = useState("5000");
   const [years, setYears] = useState("20");
   const [grossReturn, setGrossReturn] = useState("7");
+  type Field = "monthly_contribution" | "years" | "gross_return";
+  const edits = useRef<Partial<Record<Field, { baseline: number; epoch: number | undefined }>>>({});
+  function markEdit(field: Field, before: string) {
+    edits.current[field] = { baseline: edits.current[field]?.baseline ?? parse(before), epoch: analytics.currentEpoch() };
+  }
+  function commitEdit(field: Field, value: string, error: string) {
+    const edit = edits.current[field]; delete edits.current[field];
+    if (edit && edit.epoch !== undefined && edit.epoch === analytics.currentEpoch() && !error && Number.isFinite(parse(value)) && edit.baseline !== parse(value)) trackAnalytics({ name: "calculator_change", field });
+  }
   const monthlyContribution = parse(amount);
   const horizon = parse(years);
   const grossAnnualReturnPercent = parse(grossReturn);
@@ -58,14 +68,14 @@ export function Calculator({ delivery }: { delivery: DeliveryUiConfig }) {
       <div className="calculator-inputs">
         <div className="calculator-heading"><h2 id="calculator-title">Vaše investice. Váš scénář.</h2><span className="model-badge">INTERAKTIVNÍ MODEL</span></div>
         <div className="input-grid">
-          <div className="input-field amount-field"><label htmlFor="monthly-amount">Měsíčně investuji</label><div className={`number-control ${amountError ? "invalid" : ""}`}><input id="monthly-amount" type="text" inputMode="decimal" value={amount} onChange={(event) => setAmount(event.target.value)} aria-invalid={!!amountError} aria-describedby={amountError ? "amount-error" : undefined} /><span>Kč</span></div>{amountError && <p className="field-error" id="amount-error">{amountError}</p>}</div>
-          <div className="input-field"><label htmlFor="investment-years">Po dobu</label><div className={`number-control ${yearsError ? "invalid" : ""}`}><input id="investment-years" type="text" inputMode="numeric" value={years} onChange={(event) => setYears(event.target.value)} aria-invalid={!!yearsError} aria-describedby={yearsError ? "years-error" : undefined} /><span>let</span></div>{yearsError && <p className="field-error" id="years-error">{yearsError}</p>}</div>
-          <div className="input-field"><label htmlFor="gross-return">Hrubý roční výnos</label><div className={`number-control ${returnError ? "invalid" : ""}`}><input id="gross-return" type="text" inputMode="decimal" value={grossReturn} onChange={(event) => setGrossReturn(event.target.value)} aria-invalid={!!returnError} aria-describedby={`return-hint${returnError ? " return-error" : ""}`} /><span>%</span></div>{returnError && <p className="field-error" id="return-error">{returnError}</p>}</div>
+          <div className="input-field amount-field"><label htmlFor="monthly-amount">Měsíčně investuji</label><div className={`number-control ${amountError ? "invalid" : ""}`}><input id="monthly-amount" type="text" inputMode="decimal" value={amount} onChange={(event) => { markEdit("monthly_contribution", amount); setAmount(event.target.value); }} onBlur={() => commitEdit("monthly_contribution", amount, amountError)} aria-invalid={!!amountError} aria-describedby={amountError ? "amount-error" : undefined} /><span>Kč</span></div>{amountError && <p className="field-error" id="amount-error">{amountError}</p>}</div>
+          <div className="input-field"><label htmlFor="investment-years">Po dobu</label><div className={`number-control ${yearsError ? "invalid" : ""}`}><input id="investment-years" type="text" inputMode="numeric" value={years} onChange={(event) => { markEdit("years", years); setYears(event.target.value); }} onBlur={() => commitEdit("years", years, yearsError)} aria-invalid={!!yearsError} aria-describedby={yearsError ? "years-error" : undefined} /><span>let</span></div>{yearsError && <p className="field-error" id="years-error">{yearsError}</p>}</div>
+          <div className="input-field"><label htmlFor="gross-return">Hrubý roční výnos</label><div className={`number-control ${returnError ? "invalid" : ""}`}><input id="gross-return" type="text" inputMode="decimal" value={grossReturn} onChange={(event) => { markEdit("gross_return", grossReturn); setGrossReturn(event.target.value); }} onBlur={() => commitEdit("gross_return", grossReturn, returnError)} aria-invalid={!!returnError} aria-describedby={`return-hint${returnError ? " return-error" : ""}`} /><span>%</span></div>{returnError && <p className="field-error" id="return-error">{returnError}</p>}</div>
         </div>
         <p id="return-hint" className="input-hint">Výnos je váš předpoklad, nikoli prognóza. Pro oba fondy platí stejný.</p>
         <div className="fund-pickers">
           {[{ fund: first, value: firstTicker, set: setFirstTicker, id: "first-fund", label: "První ETF" }, { fund: second, value: secondTicker, set: setSecondTicker, id: "second-fund", label: "Druhé ETF" }].map(({ fund, value, set, id, label }) => (
-            <div className="fund-picker" key={id}><label htmlFor={id}>{label}</label><select id={id} value={value} onChange={(event) => set(event.target.value)}>{ETFS.map((option) => <option key={option.ticker} value={option.ticker} disabled={option.verificationStatus !== "verified" || option.annualExpenseRatioPercent === null}>{option.ticker}</option>)}</select><div className="picker-fee">{fund.annualExpenseRatioPercent !== null && fund.verificationStatus === "verified" ? `${percent(fund.annualExpenseRatioPercent)} %` : "Neověřeno"}<span>nákladovost ročně</span></div><a href={`#fund-${fund.ticker}`} className="small">Správce, zaměření a zdroj ↗</a></div>
+            <div className="fund-picker" key={id}><label htmlFor={id}>{label}</label><select id={id} value={value} onChange={(event) => { const ticker = event.target.value; if (ticker !== value && ["SPY", "SPYM", "VOO", "IVV"].includes(ticker)) trackAnalytics({ name: "etf_change", position: id === "first-fund" ? "first" : "second", ticker: ticker as "SPY" | "SPYM" | "VOO" | "IVV" }); set(ticker); }}>{ETFS.map((option) => <option key={option.ticker} value={option.ticker} disabled={option.verificationStatus !== "verified" || option.annualExpenseRatioPercent === null}>{option.ticker}</option>)}</select><div className="picker-fee">{fund.annualExpenseRatioPercent !== null && fund.verificationStatus === "verified" ? `${percent(fund.annualExpenseRatioPercent)} %` : "Neověřeno"}<span>nákladovost ročně</span></div><a href={`#fund-${fund.ticker}`} className="small">Správce, zaměření a zdroj ↗</a></div>
           ))}
         </div>
       </div>

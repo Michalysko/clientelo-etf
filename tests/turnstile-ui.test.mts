@@ -4,15 +4,20 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
+import * as analyticsModule from '../src/lib/analytics.ts';
 import { validEmail } from '../src/lib/email/validation.ts';
 
-function harness() {
+function harness(measured = false) {
+  const measurement = analyticsModule.createAnalyticsController();
+  const events: analyticsModule.AnalyticsPayload[] = [];
+  if (measured) { measurement.setConsent(true, true); measurement.enter({ pathname: "/", href: "https://etf-kompas-zeta.vercel.app/?utm_content=ad_a", referrer: "" }); measurement.ready(payload => { events.push(payload); }); measurement.track({name:"form_view",material:"report"}); measurement.track({name:"form_view",material:"guide"}); }
   let current: any;
   let context = {ready:false,failed:false};
   const instances: any[] = [], removed: string[] = [], resets: string[] = [], requests: any[] = [];
   let responseStatus = 503;
   let responseGate: Promise<void> = Promise.resolve();
   let networkFailure = false;
+  let acceptedBody = true;
   const api = {
     render: (_element: unknown, options: any) => { const id=`widget-${instances.length}`; instances.push({id,options}); return id; },
     remove: (id: string) => removed.push(id), reset: (id: string) => resets.push(id),
@@ -40,12 +45,12 @@ function harness() {
       requests.push({url,body:JSON.parse(init.body)});
       await responseGate;
       if (networkFailure) throw new Error('synthetic network failure');
-      return {status:responseStatus,json:async()=>({status:responseStatus===202?'accepted':'error'})};
+      return {status:responseStatus,json:async()=>({status:responseStatus===202 && acceptedBody?'accepted':'error'})};
     }});
     return exports;
   }
   const provider=load('../src/components/turnstile-provider.tsx');
-  const form=load('../src/components/email-form.tsx',{'./turnstile-provider':provider,'@/lib/email/validation':{validEmail}});
+  const form=load('../src/components/email-form.tsx',{'./turnstile-provider':provider,'@/lib/email/validation':{validEmail},'@/lib/analytics':{...analyticsModule,trackAnalytics:(event:any,key?:string)=>measurement.track(event,key),beginFormAttempt:(kind:any)=>measurement.startAttempt(kind),completeFormAttempt:(attempt:any,error:any)=>measurement.finishAttempt(attempt,error),observeForm:()=>()=>{}} });
   const owner=()=>({values:[],index:0,effects:[],tree:null as any});
   function render(state: any,component: any,props: any) {
     current=state;state.index=0;state.effects=[];state.tree=component(props);
@@ -53,13 +58,77 @@ function harness() {
     state.effects.forEach((effect: any)=>effect()); return state.tree;
   }
   function nodes(tree: any): any[] {return !tree || typeof tree!=='object'?[]:Array.isArray(tree)?tree.flatMap(nodes):[tree,...nodes(tree.props?.children)];}
-  return {owner,render,nodes,form:form.EmailForm,provider:provider.TurnstileProvider,instances,removed,resets,requests,
+  return {owner,render,nodes,form:form.EmailForm,provider:provider.TurnstileProvider,instances,removed,resets,requests,events,measurement,
     context:(value: typeof context)=>{context=value;},status:(value:number)=>{responseStatus=value;},
-    gate:(value:Promise<void>)=>{responseGate=value;},networkFailure:()=>{networkFailure=true;}};
+    gate:(value:Promise<void>)=>{responseGate=value;},networkFailure:()=>{networkFailure=true;},acceptedBody:(value:boolean)=>{acceptedBody=value;}};
 }
 const delivery={enabled:true,siteKey:'unit-only'};
 const scenario={firstTicker:'SPY',secondTicker:'SPYM',monthlyContribution:5000,years:20,grossAnnualReturnPercent:7,initialInvestment:0};
 const props=(kind:'report'|'guide')=>({id:kind,kind,buttonText:kind,delivery,...(kind==='report'?{scenario}:{})});
+
+test('analytics follows actual form responses: accepted only on 202, retries distinct, no data leakage',async()=>{
+  for(const kind of ['report','guide'] as const) {
+    const h=harness(true),owner=h.owner();h.context({ready:true,failed:false});
+    const render=()=>h.render(owner,h.form,props(kind));
+    render();h.instances[0].options.callback('unit-token');render();
+    const form=()=>h.nodes(owner.tree).find(n=>n.type==='form');
+    form().props.onFocusCapture();form().props.onPointerDownCapture();
+    for(const status of [400,403,429,503,202]) {
+      h.instances[0].options.callback('fresh-token');render();h.status(status);
+      await form().props.onSubmit({preventDefault(){}});render();
+    }
+    const accepted=h.events.filter(e=>e.name==='material_accepted');
+    assert.equal(accepted.length,1);assert.equal(accepted[0].data?.material,kind);
+    assert.equal(h.events.filter(e=>e.name==='form_start').length,1);
+    assert.equal(h.events.filter(e=>e.name==='form_submit').length,5);
+    assert.equal(h.events.filter(e=>e.name==='form_error').length,4);
+    assert.ok(!JSON.stringify(h.events).includes('unit@example.com'));
+    assert.ok(!JSON.stringify(h.events).includes('5000'));
+    assert.ok(!JSON.stringify(h.events).includes('unit-token'));
+  }
+});
+
+test('analytics network failure cannot change accepted form state; pre-consent request is not backfilled',async()=>{
+  for(const measured of [false,true]) {
+    const h=harness(measured),owner=h.owner();h.context({ready:true,failed:false});h.status(202);
+    if(measured) h.measurement.ready(()=>{throw new Error('mock analytics outage');});
+    h.render(owner,h.form,props('report'));h.instances[0].options.callback('unit-token');
+    h.render(owner,h.form,props('report'));
+    await h.nodes(owner.tree).find(n=>n.type==='form').props.onSubmit({preventDefault(){}});
+    h.render(owner,h.form,props('report'));
+    assert.ok(JSON.stringify(owner.tree).includes('přijala'));
+    if(!measured) assert.equal(h.events.length,0);
+  }
+});
+
+test('202 with unexpected body is not a conversion, and granting during pending request does not backfill',async()=>{
+  const h=harness(true),owner=h.owner();h.context({ready:true,failed:false});h.status(202);h.acceptedBody(false);
+  const render=()=>h.render(owner,h.form,props('guide'));render();h.instances[0].options.callback('token');render();
+  await h.nodes(owner.tree).find(n=>n.type==='form').props.onSubmit({preventDefault(){}});
+  assert.equal(h.events.filter(e=>e.name==='material_accepted').length,0);
+  assert.equal(h.events.filter(e=>e.name==='form_error').length,1);
+  const delayed=harness(),other=delayed.owner();delayed.context({ready:true,failed:false});delayed.status(202);
+  let release!:()=>void;delayed.gate(new Promise<void>(resolve=>{release=resolve;}));
+  delayed.render(other,delayed.form,props('report'));delayed.instances[0].options.callback('token');delayed.render(other,delayed.form,props('report'));
+  const pending=delayed.nodes(other.tree).find(n=>n.type==='form').props.onSubmit({preventDefault(){}});
+  delayed.measurement.setConsent(true,true);delayed.measurement.enter({pathname:'/',href:'https://example.com',referrer:''});delayed.measurement.ready(p=>{delayed.events.push(p);});
+  release();await pending;
+  assert.equal(delayed.events.filter(e=>e.name==='material_accepted').length,0);
+});
+
+test('pending POST from ad_a never completes as an ad_b conversion after SPA navigation',async()=>{
+  const h=harness(true),owner=h.owner();h.context({ready:true,failed:false});h.status(202);
+  let release!:()=>void;h.gate(new Promise<void>(resolve=>{release=resolve;}));
+  h.render(owner,h.form,props('report'));h.instances[0].options.callback('token');h.render(owner,h.form,props('report'));
+  const pending=h.nodes(owner.tree).find(n=>n.type==='form').props.onSubmit({preventDefault(){}});
+  assert.equal(h.requests.length,1);
+  h.measurement.enter({pathname:'/ochrana-osobnich-udaju',href:'https://example.com/ochrana-osobnich-udaju',referrer:''});
+  h.measurement.enter({pathname:'/',href:'https://example.com/?utm_content=ad_b',referrer:''});
+  h.measurement.track({name:'form_view',material:'report'});
+  release();await pending;
+  assert.equal(h.events.find(e=>e.name==='form_submit')?.data?.ad_variant,'ad_a');
+  assert.equal(h.events.filter(e=>e.name==='material_accepted').length,0);
+});
 
 test('single script owner broadcasts readiness and failure to both form consumers',()=>{
   const h=harness(),p=h.owner();

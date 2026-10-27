@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { AnalyticsProvider } from "@/components/analytics-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,6 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  referrer: "no-referrer",
   title: "ETF Kompas — Stejný index. Jiné poplatky.",
   description: "Porovnejte SPY, SPYM, VOO a IVV. Model pravidelného investování ukáže vliv nákladovosti ETF na dlouhodobou investici. S ověřenými zdroji a jasnou metodikou.",
 };
@@ -23,7 +25,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="cs"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col"><AnalyticsProvider enabled={process.env.NODE_ENV === "production" && process.env.VERCEL_ENV === "production"}>{children}</AnalyticsProvider></body>
     </html>
   );
 }

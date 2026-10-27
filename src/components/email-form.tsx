@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import type { ReportScenario } from "@/lib/email/validation";
 import { validEmail } from "@/lib/email/validation";
+import { beginFormAttempt, completeFormAttempt, observeForm, trackAnalytics } from "@/lib/analytics";
 
 export interface DeliveryUiConfig { enabled: boolean; siteKey: string }
 interface TurnstileApi {
@@ -29,6 +30,11 @@ export function EmailForm({ id, buttonText, kind, delivery, scenario }: {
   const emailInput = useRef<HTMLInputElement>(null);
   const trapInput = useRef<HTMLInputElement>(null);
   const sending = useRef(false);
+  const formElement = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (formElement.current) return observeForm(formElement.current, kind);
+  }, [kind]);
 
   useEffect(() => {
     if (!ready || !delivery.enabled || !widgetElement.current || !window.turnstile) return;
@@ -48,12 +54,14 @@ export function EmailForm({ id, buttonText, kind, delivery, scenario }: {
     if (sending.current || !delivery.enabled || !ready || failed || !token || (kind === "report" && !scenario)) return;
     const email = emailInput.current?.value.trim();
     if (!validEmail(email)) {
+      trackAnalytics({ name: "form_error", material: kind, error: "validation" });
       setEmailError(true); setStatus("error"); setMessage("Zadejte platnou e-mailovou adresu.");
       emailInput.current?.focus();
       return;
     }
     setEmailError(false);
     sending.current = true;
+    const measuredAttempt = beginFormAttempt(kind);
     setStatus("pending"); setMessage("Odesíláme váš požadavek…");
     try {
       const response = await fetch(`/api/materials/${kind}`, {
@@ -63,13 +71,16 @@ export function EmailForm({ id, buttonText, kind, delivery, scenario }: {
       });
       const body = await response.json().catch(() => null);
       if (response.status === 202 && body?.status === "accepted") {
+        completeFormAttempt(measuredAttempt);
         setStatus("success");
         setMessage(`E-mailová služba přijala ${kind === "report" ? "váš report" : "průvodce s PDF přílohou"} k odeslání. Zkontrolujte poštu i spam. Přijetí službou ještě nepotvrzuje doručení.${kind === "report" ? " Výpis používá scénář platný při odeslání formuláře." : ""}`);
       } else {
+        completeFormAttempt(measuredAttempt, response.status === 400 ? "validation" : response.status === 403 ? "verification" : response.status === 429 ? "busy" : "server");
         setStatus("error");
         setMessage(response.status === 400 ? "Zkontrolujte e-mail a platnost parametrů kalkulačky." : response.status === 403 ? "Ověření proti robotům vypršelo nebo se nezdařilo. Zkuste nové ověření." : response.status === 429 ? "Služba je dočasně vytížená. Zkuste to za chvíli." : "Odeslání nebylo potvrzeno. Zkuste to později; stejné požadavky chráníme proti duplicitnímu odeslání.");
       }
     } catch {
+      completeFormAttempt(measuredAttempt, "network");
       setStatus("error"); setMessage("Odeslání nebylo potvrzeno. Zkontrolujte připojení a zkuste to znovu; stejné požadavky chráníme proti duplicitnímu odeslání.");
     } finally {
       sending.current = false; setToken("");
@@ -78,7 +89,11 @@ export function EmailForm({ id, buttonText, kind, delivery, scenario }: {
   }
 
   return (
-    <form className="email-form" onSubmit={submit} aria-label={kind === "report" ? "Podrobný report na e-mail" : "Průvodce ETF na e-mail"} aria-busy={status === "pending"}>
+    <form ref={formElement} className="email-form" onSubmit={submit}
+      onFocusCapture={() => trackAnalytics({ name: "form_start", material: kind }, `form_start:${kind}`)}
+      onPointerDownCapture={() => trackAnalytics({ name: "form_start", material: kind }, `form_start:${kind}`)}
+      onInvalidCapture={() => trackAnalytics({ name: "form_error", material: kind, error: "validation" })}
+      aria-label={kind === "report" ? "Podrobný report na e-mail" : "Průvodce ETF na e-mail"} aria-busy={status === "pending"}>
       <label htmlFor={`${id}-email`}>Váš e-mail <span className="muted">(povinné)</span></label>
       <div className="email-row">
         {/* No name: a native submit without JavaScript cannot put the email in the URL. */}
