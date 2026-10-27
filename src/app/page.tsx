@@ -1,4 +1,5 @@
 import { Calculator } from "@/components/calculator";
+import Link from "next/link";
 import { EmailForm } from "@/components/email-form";
 import { TurnstileProvider } from "@/components/turnstile-provider";
 import { ETFS } from "@/data/etfs";
@@ -69,10 +70,10 @@ export default function Home() {
           <h2 id="privacy-title">Jednorázový materiál. Žádný automatický odběr.</h2>
           <p>Zadaný e-mail a u reportu parametry scénáře zpracujeme pro zaslání vyžádaného materiálu. Zprávu a přílohu předáme službě Resend, která pro doručení zpracovává příjemce i obsah e-mailu. V aplikaci nevytváříme databázi kontaktů ani je nezapisujeme do aplikačních logů.</p>
           <p>Formuláře chrání Cloudflare Turnstile, které při ověření zpracovává technické údaje prohlížeče. Zadáním e-mailu se nepřihlašujete k newsletteru ani ETF Hlídači. <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">Soukromí u Cloudflare ↗</a> · <a href="https://resend.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer">Soukromí u Resend ↗</a></p>
-          <p><strong>Projekt je v přípravě.</strong> Identifikační a kontaktní údaje správce, doby uchovávání a úplné informace o vašich právech doplní provozovatel před veřejným spuštěním.</p>
+          <p><strong>ETF Kompas je osobní nekomerční demo pro výběrové řízení Clientelo.</strong> Správce a skutečný rozsah zpracování jsou popsány na samostatné stránce; neověřené položky jsou označeny k doplnění před veřejným spuštěním. <Link href="/ochrana-osobnich-udaju">Ochrana osobních údajů</Link>.</p>
         </section>
       </main>
-      <footer className="site-footer wrap"><a className="brand" href="#">ETF<span>Kompas</span></a><p>V číslech jasno. V rozhodnutí vlastní směr.</p><span>Vzdělávací projekt · Bez investičního poradenství</span></footer>
+      <footer className="site-footer wrap"><a className="brand" href="#">ETF<span>Kompas</span></a><p>V číslech jasno. V rozhodnutí vlastní směr.</p><span>Vzdělávací projekt · Bez investičního poradenství</span><Link href="/ochrana-osobnich-udaju">Ochrana osobních údajů</Link></footer>
     </TurnstileProvider>
   );
 }

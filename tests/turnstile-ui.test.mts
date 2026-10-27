@@ -33,6 +33,7 @@ function harness() {
       if (name==='react') return react;
       if (name==='react/jsx-runtime') return {jsx,jsxs:jsx};
       if (name==='next/script') return {default:'script'};
+      if (name==='next/link') return {default:'a'};
       if (name in extra) return extra[name];
       throw new Error('Unexpected dependency');
     },window:{turnstile:api},AbortSignal,fetch:async(url: string,init: any)=>{
@@ -85,6 +86,18 @@ test('empty and invalid emails never reach fetch; both forms expose accessible f
       assert.equal(feedback.props.role,'status');assert.match(feedback.props.children,/platnou/);
       assert.ok(input.props['aria-describedby'].includes(`${kind}-feedback`));
     }
+  }
+});
+
+test('both forms explain the one-off demo purpose and link to the privacy page without a consent checkbox',()=>{
+  for (const kind of ['report','guide'] as const) {
+    const h=harness(),owner=h.owner(),tree=h.render(owner,h.form,props(kind));
+    const privacy=h.nodes(tree).find(n=>n.props.id===`${kind}-privacy`);
+    const text=h.nodes(privacy).flatMap(n=>Array.isArray(n.props.children)?n.props.children:[n.props.children]).filter(c=>typeof c==='string').join(' ');
+    for (const phrase of ['nekomerčním demu','jednorázové','Vlastní databázi kontaktů nevedeme','nepřihlašujeme']) assert.ok(text.includes(phrase));
+    assert.ok(h.nodes(privacy).some(n=>n.props.href==='/ochrana-osobnich-udaju'));
+    assert.equal(h.nodes(tree).filter(n=>n.props.type==='checkbox').length,0);
+    assert.equal(h.requests.length,0);
   }
 });
 

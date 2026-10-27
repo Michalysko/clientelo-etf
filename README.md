@@ -16,6 +16,14 @@ Do lokálního `.env.local` patří následující proměnné. Jejich hodnoty ni
 - `NEXT_PUBLIC_TURNSTILE_SITE_KEY`: pouze veřejný identifikátor widgetu, nikdy tajný klíč.
 - `APP_ORIGIN`: přesný origin aplikace, lokálně například `http://127.0.0.1:3000`; v produkci vlastní HTTPS origin bez cesty.
 
+Samostatná veřejná kontaktní položka: `PRIVACY_CONTACT_EMAIL`. Je určena pouze pro kontakt správce na stránce `/ochrana-osobnich-udaju`, nikoli pro odesílání přes Resend. Její hodnota se záměrně zveřejní návštěvníkům; nevkládat do ní tajemství. Bez platné adresy stránka ukáže „K doplnění / ověření“. Neexistuje fallback na `RESEND_FROM_EMAIL`. Kontakt se připravuje při buildu — po změně provést nový build/deployment. Veřejný kontakt je `privacy@michalwebdeveloper.cz`; vlastník dne 27. 10. 2026 potvrdil obousměrné ověření schránky. Je nastaven v ignorovaném lokálním prostředí; před nasazením jej nastavit samostatně také ve Vercelu.
+
+## Ochrana osobních údajů
+
+Stránka `/ochrana-osobnich-udaju` popisuje osobní nekomerční demo, skutečný tok údajů, poskytovatele a neověřené položky. Jméno správce Michal Růžička bylo výslovně poskytnuto vlastníkem pro zveřejnění; veřejná kontaktní adresa je `privacy@michalwebdeveloper.cz` a její příjem i odesílání ověřil vlastník. Odkaz je u obou formulářů, v informační sekci i patičce. Technický audit a přesný seznam zbývajících podkladů: [revize soukromí](docs/privacy-review.md).
+
+Stránka zatím není právně dokončená pro veřejný sběr údajů: právní základy, konkrétní retence, přenosy a smluvní podmínky účtů vyžadují potvrzení. Zvlášť je třeba ověřit zpracovatelské ujednání pro plánovaný Vercel Hobby; veřejné DPA vymezuje Pro/Enterprise. Nejsou zavedeny preventivní checkbox ani cookie banner. To není tvrzení, že při libovolném budoucím nastavení poskytovatelů souhlas nikdy nebude potřebný. Výpočty, serverové ověření a doručování zůstávají beze změny.
+
 V Cloudflare vytvořte Turnstile widget a povolte odpovídající hostname (lokální i budoucí produkční podle použití). Domény v konfiguraci Turnstile nezahrnují port. Po změně konfigurace proveďte nový build/restart; veřejný site key a stav dostupnosti formulářů se připravují při buildu. Na produkčním hostingu je nutné serverové proměnné nastavit samostatně. Testovací bypass klíče Turnstile nejsou pro skutečné odesílání povoleny.
 
 `npm test` používá pouze testovací fakes a mockované poskytovatele, nečte `.env.local` a neodesílá zprávy. Produkční integrační test s Resendem není automatickou součástí testů ani buildu; vyžaduje samostatný souhlas vlastníka a jeho adresu. Přijetí zprávy Resendem znamená přijetí k odeslání, nikoli potvrzení doručení.

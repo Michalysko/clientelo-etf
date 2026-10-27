@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useTurnstile } from "./turnstile-provider";
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
@@ -90,7 +91,7 @@ export function EmailForm({ id, buttonText, kind, delivery, scenario }: {
       </>}
       <p id={`${id}-availability`} className="form-availability">{!delivery.enabled ? "Odesílání je momentálně nedostupné. Zkuste to později." : kind === "report" && !scenario ? "Pro zaslání reportu nejprve vyplňte platné parametry kalkulačky." : token && ready && !failed ? "Ověření dokončeno. Můžete požádat o zaslání materiálu." : "Pro odeslání je potřeba dokončit ověření proti robotům."}</p>
       {(failed || verificationError) && <p className="form-feedback error" role="alert">{verificationError || "Ověření se nepodařilo načíst. Zkontrolujte připojení a obnovte stránku."}</p>}
-      <p id={`${id}-privacy`} className="form-privacy">E-mail použijeme k jednorázovému zaslání přes Resend. Bez přihlášení k newsletteru či ETF Hlídači. <a href="#osobni-udaje">Zpracování údajů</a>.</p>
+      <p id={`${id}-privacy`} className="form-privacy">V tomto nekomerčním demu zadáváte e-mail pro jednorázové doručení {kind === "report" ? "vyžádaného reportu" : "PDF průvodce"} přes Resend. Vlastní databázi kontaktů nevedeme; k automatickému marketingu, newsletteru ani ETF Hlídači vás nepřihlašujeme. <Link href="/ochrana-osobnich-udaju">Jak zpracováváme osobní údaje</Link>.</p>
       <p id={`${id}-feedback`} className={`form-feedback ${status === "error" ? "error" : ""}`} role="status" aria-live="polite">{message}</p>
       <noscript><p>Pro bezpečné odeslání formuláře je potřeba JavaScript.</p></noscript>
     </form>

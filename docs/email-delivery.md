@@ -42,6 +42,8 @@ Neověřují reálný účet Resend, skutečné doručení, Gmail/Outlook render
 
 ## Před veřejným spuštěním — doplní vlastník
 
+Aktualizace 27. 10. 2026: informace jsou nyní na `/ochrana-osobnich-udaju`, na kterou vedou odkazy z obou formulářů. Vlastník poskytl jméno správce Michal Růžička; veřejný kontakt `privacy@michalwebdeveloper.cz` se nastavuje samostatně přes `PRIVACY_CONTACT_EMAIL` a vlastník potvrdil jeho obousměrné otestování. Lokální nastavení bylo doplněno bez změny doručovacích proměnných. Přesný stav a zbývající podklady jsou v [revizi soukromí](privacy-review.md). Tato úprava nemění endpointy, výpočty, payloady ani odesílání.
+
 Současné texty nejsou úplným informačním dokumentem pro veřejný sběr údajů. Na stránce je tato mezera výslovně označena. Nejde o překážku uložení kódu do Gitu, ale je to podmínka před veřejným provozem.
 
 - Skutečná identita a kontakt správce, případně kontakt pověřence, pokud existuje.
