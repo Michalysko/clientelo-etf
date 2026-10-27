@@ -31,6 +31,11 @@ export default function Home() {
             <p className="hero-description">Porovnejte americká ETF na S&amp;P 500. Zjistěte, co mohou průběžné poplatky udělat s vaší investicí za několik desítek let.</p>
             <a className="text-link hero-jump" href="#kalkulacka">Spočítat vlastní scénář <span aria-hidden="true">↓</span></a>
             <div className="editorial-note"><span className="note-index">01 / PRINCIP</span><p>Výnos trhu neznáme.<br /><strong>Nákladovost porovnat můžeme.</strong></p><p className="small muted">Obě ETF počítáme se stejným hrubým výnosem. Rozdíl v modelu tak tvoří pouze nákladovost.</p></div>
+            <ul className="hero-benefits" aria-label="Výhody ETF Kompasu">
+              <li><span className="benefit-mark" aria-hidden="true">↗</span><div><h2>Skutečná data</h2><p>Poplatky ETF vycházejí z oficiálních zdrojů správců fondů.</p></div></li>
+              <li><span className="benefit-mark" aria-hidden="true">↗</span><div><h2>Váš konkrétní scénář</h2><p>Okamžitě uvidíte modelovaný dopad rozdílných nákladů na hodnotu investice.</p></div></li>
+              <li><span className="benefit-mark" aria-hidden="true">↗</span><div><h2>Podrobný report e-mailem</h2><p>Získáte roční přehled vývoje investice a porovnání obou ETF zdarma.</p></div></li>
+            </ul>
           </div>
           <div className="calculator-column">
             <Calculator delivery={delivery} />

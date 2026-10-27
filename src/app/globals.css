@@ -40,6 +40,14 @@ h1 em { display: inline-block; padding-bottom: 7px; border-bottom: 3px solid var
 .editorial-note p:not(.small) { font-size: 20px; line-height: 1.5; letter-spacing: -.025em; margin: 20px 0 10px; }
 .editorial-note strong { font-weight: 500; }
 .editorial-note p.small { max-width: 300px; }
+.hero-benefits { display: none; }
+@media (min-width: 1100px) {
+  .hero-benefits { display: grid; gap: 24px; list-style: none; padding: 0; margin: 36px 0 0; max-width: 370px; }
+  .hero-benefits li { display: flex; align-items: flex-start; gap: 14px; }
+  .benefit-mark { display: grid; place-items: center; flex: 0 0 28px; height: 28px; background: var(--green); border-radius: 50%; font-size: 16px; }
+  .hero-benefits h2 { font-size: 15px; line-height: 1.5; font-weight: 600; letter-spacing: -.02em; }
+  .hero-benefits p { margin: 5px 0 0; color: var(--muted); font-size: 13px; line-height: 1.75; }
+}
 .calculator-column { min-width: 0; }
 .hero-risk { color: var(--muted); margin: 16px 0 0; }
 .hero-risk a { color: var(--ink); }
@@ -205,16 +213,16 @@ h2 { font-size: clamp(26px, 3vw, 39px); line-height: 1.2; letter-spacing: -.05em
   .wrap { width: calc(100% - 36px); } .site-header { height: 72px; gap: 10px; }
   .brand { font-size: 21px; gap: 5px; } .brand svg { width: 27px; height: 27px; margin-right: 3px; }
   .site-header nav .desktop-link { display: none; } .site-header nav a { font-size: 11px; gap: 9px; }
-  .hero { grid-template-columns: 1fr; padding-block: 18px 32px; gap: 14px; } .hero-copy { padding-top: 0; }
+  .hero { grid-template-columns: 1fr; padding-block: 14px 32px; gap: 10px; } .hero-copy { padding-top: 0; }
   .hero-copy .eyebrow { font-size: 9px; margin-bottom: 12px; } h1 { font-size: clamp(38px, 10.8vw, 59px); margin: 0 0 12px; line-height: 1.06; }
-  .hero-description { font-size: 14px; line-height: 1.75; margin: 12px 0 4px; max-width: 500px; } .hero-jump { margin-bottom: 0; }
+  .hero-description { font-size: 14px; line-height: 1.65; margin: 12px 0 4px; max-width: 500px; } .hero-jump { margin-bottom: 0; }
   .editorial-note { display: none; } .hero-risk { font-size: 11px; line-height: 1.7; margin-top: 12px; max-width: 500px; }
   .calculator-inputs { padding: 21px 18px 15px; } .calculator-heading { margin-bottom: 20px; } .calculator-heading h2 { font-size: 16px; }
   .model-badge { font-size: 7px; padding: 4px; } .input-grid { grid-template-columns: 1fr 1fr; gap: 15px 12px; } .amount-field { grid-column: 1 / -1; }
   .input-field label { font-size: 12px; margin-bottom: 6px; } .number-control { min-height: 50px; } .number-control input { font-size: 22px; padding-block: 10px; }
   .amount-field .number-control input { font-size: 26px; } .input-hint { margin-bottom: 20px; } .fund-pickers { gap: 14px; padding-top: 16px; }
   .fund-picker + .fund-picker { padding-left: 14px; } .fund-picker select { font-size: 12px; } .picker-fee { font-size: 27px; } .fund-picker > a { font-size: 10px; }
-  .calculator-results { padding: 23px 18px 18px; } .result-heading { flex-wrap: wrap; gap: 5px; } .result-heading h3 { font-size: 16px; } .result-heading > span { font-size: 8px; }
+  .calculator-results { padding: 18px 18px 18px; } .result-heading { flex-wrap: wrap; gap: 5px; } .result-heading h3 { font-size: 16px; } .result-heading > span { font-size: 8px; }
   .value-grid p { font-size: clamp(18px, 5.1vw, 22px); } .difference-box { padding: 18px 15px; } .difference-box strong { font-size: 38px; } .difference-box > p { font-size: 12px; }
   .report-offer { padding: 23px 18px 17px; } .email-row { flex-direction: column; } .email-row input, .primary-button { flex-basis: auto; }
   .email-row input { font-size: 16px; } .primary-button { min-height: 50px; font-size: 12px; } .methodology { padding-inline: 18px; }
