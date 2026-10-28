@@ -80,6 +80,30 @@ Tři budoucí experimenty, seřazené podle odhadovaného dopadu; nebyly realizo
 
 Porovnávat stejné publikum, období a podmínky; hlídat celkový CR, chyby, rychlost a přístupnost. Součet konverzí obou materiálů není počet různých lidí. Bez skutečné kampaně a nákladů nelze určit vítěze ani cenu za kontakt.
 
+## Připravenost na spuštění reklamní kampaně
+
+**ETF Kompas má funkční a otestovaný základ pro spuštění reálné reklamní kampaně.** Landing page je veřejně dostupná, responzivní a její hlavní konverzní scénáře – výpočet, e-mailový report i PDF průvodce – byly úspěšně ověřeny v produkčním prostředí.
+
+Aplikace je aktuálně provozována v demonstračním režimu. K přechodu na veřejný komerční provoz zbývá vyřešit především tři oblasti, které vyžadují rozhodnutí nebo součinnost zadavatele:
+
+| Oblast | Co je potřeba dořešit a proč |
+| --- | --- |
+| **Hosting** | Aplikace běží na bezplatném tarifu Vercel Hobby v souladu se zadáním. Tento tarif je určen pro osobní a nekomerční použití, proto je pro reálnou komerční kampaň nutné přejít na odpovídající tarif nebo zvolit jiné vhodné hostingové řešení. |
+| **Odesílání e-mailů** | V současnosti mohou e-maily přijímat pouze předem schválené adresy. Omezení je záměrné z důvodu ochrany osobních údajů, bezpečnosti demonstračního provozu a prevence zneužití. Před veřejným spuštěním je nutné zajistit odpovídající právní a provozní podmínky a bezpečné doručování bez omezení na předem schválené příjemce. |
+| **Právní a obchodní náležitosti** | Zadavatel musí potvrdit podmínky zpracování osobních údajů, související smluvní a přenosové podmínky poskytovatelů a schválit obsah finanční a reklamní komunikace. Některé otevřené otázky se týkají již současného dema. |
+
+### Proč tyto kroky nejsou součástí dema?
+
+Cílem praktického zadání bylo vytvořit funkční aplikaci na bezplatném hostingu a předvést její reálné fungování.
+
+Proto jsem se zaměřil na dokončení a ověření hlavních funkcí, uživatelského prostředí a konverzních scénářů. Současně jsem ponechal omezení, která brání nekontrolovanému veřejnému využívání demonstrační služby.
+
+Přechod na komerční hosting, schválení právních podmínek a nastavení pravidel veřejného doručování vyžadují součinnost zadavatele.
+
+**Shrnutí:** ETF Kompas je funkční, veřejně dostupná aplikace s ověřenými konverzními scénáři. Po vyřešení uvedených podmínek a závěrečném ověření produkční konfigurace může být využita pro skutečnou reklamní kampaň.
+
+Podrobnosti o současném provozu a otevřených otázkách jsou uvedeny v sekci „Omezení dema a soukromí“ a v dokumentu [technická revize soukromí](docs/privacy-review.md).
+
 ## Lokální spuštění a konfigurace
 
 Node.js **24.12+**, npm a Git. Po klonování repozitáře v jeho kořeni:
