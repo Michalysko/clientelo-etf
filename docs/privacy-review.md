@@ -1,5 +1,32 @@
 # Revize informací o osobních údajích — 27. 10. 2026
 
+## Aktuální stav demonstračního provozu — 28. 10. 2026
+
+Tento souhrn má přednost před staršími popisy plánovaného nasazení a neomezeného doručování níže. Historické záznamy zůstávají zachované.
+
+- **Technické fungování:** nasazený demonstrační režim `d83f3aa` omezuje obě cesty doručování společným serverovým allowlistem. `DEMO_ALLOWED_EMAILS` vyžaduje přesně dvě různé platné adresy; jejich hodnoty zde nejsou uvedeny. Seznam se uchovává v serverové konfiguraci a není předáván prohlížeči, analytice ani diagnostickým logům. Nejde o databázi kontaktů získaných z formulářů.
+- **Odmítnuté požadavky:** i nepovolená adresa a související data projdou hostingem a serverem; před kontrolou příjemce probíhá validace a Siteverify. Nepovolený požadavek není předán Resendu a PDF se pro něj nenačítá. Chybějící nebo neplatný allowlist doručování zablokuje. Samotné demo odmítnutí nevysílá `form_error` ani `material_accepted`; skutečný pokus zůstává `form_submit` po souhlasu.
+- **Potvrzení vlastníka:** vlastník potvrdil produkční nasazení `d83f3aa`, úspěšné doručení HTML reportu i PDF na schválenou adresu a odmítnutí nepovolené adresy. Nejde o nové integrační testy provedené agentem v této etapě. Reklamní kampaně ani získávání kontaktů pro marketing nejsou spuštěné.
+- **Účel a rozsah:** projekt je veřejně dostupné nekomerční demo pro výběrové řízení Clientelo. Také nyní zpracovává osobní údaje při provozu webu, formulářů, Turnstile a případně dobrovolné analytiky. Veřejné texty používají označení „předem schválení testovací příjemci“, nikoli počet nebo hodnoty adres.
+
+### Otevřené otázky současného dema
+
+Dokumentované posouzení právních základů doručování, kontroly oprávněných příjemců, bezpečnosti a provozní diagnostiky dosud není uzavřené. Chybí také doložení použitelného zpracovatelského ujednání pro Vercel Hobby, konkrétních regionů a logů a odpovídajících přenosových záruk. Veřejné [Vercel DPA](https://vercel.com/legal/dpa) vymezuje působnost pro Pro a Enterprise; kontaktování právního oddělení ani potvrzení pro Hobby neproběhlo.
+
+[Resend DPA, část 6](https://resend.com/legal/dpa) uvádí primární zpracování v USA a upravuje příslušné SCC. Použitelné podmínky účtu a přenosové záruky musí správce doložit. Odkaz na DPA není auditem konkrétní smlouvy. Veřejná dokumentace Resendu uvádí 30denní retenci běžných tarifů; konkrétní provozní podmínky účtu a open/click tracking zde nejsou potvrzeny.
+
+Dosud nejsou uzavřené lhůty nebo kritéria uchovávání allowlistu, technických signálů Cloudflare, provozních záznamů a korespondence při vyřizování práv. Zůstává ověření podmínek poskytovatelů, jejich rolí, odstranění údajů, mezinárodních přenosů a úplného síťového/úložného chování na produkci. Dřívější potvrzení vlastníka o režimu Managed a vypnutém pre-clearance není novou kontrolou účtu. Technické doručení a odmítnutí nejsou kompletním auditem soukromí.
+
+**Technicky ověřené omezení doručování není potvrzením právní připravenosti. Otevřené otázky současného dema nelze odložit pouze označením za podmínky budoucího ostrého provozu. Jejich transparentní zveřejnění je samo právně neřeší.**
+
+### Další podmínky případného rozšíření
+
+Před běžnou veřejnou službou, reklamními kampaněmi nebo získáváním kontaktů je nutné nejprve uzavřít současné otevřené otázky a poté znovu posoudit rozsah zpracování, informační texty, ochranu proti zneužití a interpretaci konverzí. Demo měření není výsledkem skutečné kampaně. Případný marketing nebo nový účel by vyžadoval samostatné posouzení; nyní není implementován.
+
+### Rozsah textové aktualizace
+
+Správce a veřejný kontakt zůstávají zachované. Úpravy sjednocují popis odmítnutých žádostí, serverové konfigurace a příjemců, USA u Resendu a současných otevřených podmínek. Nezměněna výpočetní logika, allowlist, doručovací tok, bezpečnost ani analytické schéma a souhlas. Závěrečný odkaz PDF byl opraven na existující produkční kotvu `https://etf-kompas-zeta.vercel.app/#kalkulacka`; ostatní vzdělávací obsah se nemění.
+
 ## Účel a stav
 
 Osobní nekomerční demonstrace pro výběrové řízení Clientelo. Nová App Router stránka `/ochrana-osobnich-udaju` je veřejně dostupná v aplikaci bez formulářů a bez vlastního Turnstile loaderu. Uvádí skutečné zpracování a zřetelné nedokončené položky. Neoznačuje nekomerční demo za výjimku z GDPR.

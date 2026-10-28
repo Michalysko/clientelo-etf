@@ -114,7 +114,7 @@ story += [p("Evropská <b>UCITS ETF</b> podléhají evropskému fondovému rámc
 for i, (label, url) in enumerate(SOURCES, 1):
     story.append(p(f'<a href="{url}" color="#173d35">[{i}] {label}</a>', "source"))
 story += [Spacer(1, 7), p("Vzdělávací materiál ETF Kompasu. Nikoli individuální investiční doporučení, daňová rada ani nabídka konkrétního produktu. Za rozhodnutí odpovídá investor.", "small")]
-story += [box("TEĎ SI VYZKOUŠEJTE VLASTNÍ SCÉNÁŘ", "<b>Vraťte se do kalkulačky ETF Kompasu.</b><br/>Změňte vklad, horizont a výnos. Porovnejte vliv nákladovosti."), p("Otevřete znovu stránku, ze které jste si průvodce vyžádali. Veřejný odkaz na kalkulačku doplníme po nasazení aplikace.", "small")]
+story += [box("TEĎ SI VYZKOUŠEJTE VLASTNÍ SCÉNÁŘ", "<b>Vraťte se do kalkulačky ETF Kompasu.</b><br/>Změňte vklad, horizont a výnos. Porovnejte vliv nákladovosti."), p('Vraťte se do kalkulačky ETF Kompasu: <a href="https://etf-kompas-zeta.vercel.app/#kalkulacka" color="#173d35">https://etf-kompas-zeta.vercel.app/#kalkulacka</a>', "small")]
 
 def decorate(c, doc):
     c.saveState()

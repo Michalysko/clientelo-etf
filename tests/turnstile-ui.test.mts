@@ -216,7 +216,7 @@ test('both forms explain the one-off demo purpose and link to the privacy page w
     const h=harness(),owner=h.owner(),tree=h.render(owner,h.form,props(kind));
     const privacy=h.nodes(tree).find(n=>n.props.id===`${kind}-privacy`);
     const text=h.nodes(privacy).flatMap(n=>Array.isArray(n.props.children)?n.props.children:[n.props.children]).filter(c=>typeof c==='string').join(' ');
-    for (const phrase of ['nekomerčním demu','jednorázové','Vlastní databázi kontaktů nevedeme','nepřihlašujeme']) assert.ok(text.includes(phrase));
+    for (const phrase of ['nekomerčním demu','ověření žádosti','případné jednorázové','předem schválenému testovacímu příjemci','Nevytváříme databázi kontaktů získaných z formulářů','nepřihlašujeme']) assert.ok(text.includes(phrase));
     assert.ok(h.nodes(privacy).some(n=>n.props.href==='/ochrana-osobnich-udaju'));
     assert.equal(h.nodes(tree).filter(n=>n.props.type==='checkbox').length,0);
     assert.equal(h.requests.length,0);

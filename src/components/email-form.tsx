@@ -99,7 +99,7 @@ export function EmailForm({ id, buttonText, kind, delivery, scenario }: {
         if (!demoDenied) completeFormAttempt(measuredAttempt, response.status === 400 ? "validation" : response.status === 403 ? "verification" : response.status === 429 ? "busy" : "server");
         setStatus("error");
         setMessage(conflict ? "Tuto žádost nelze bezpečně zopakovat. Nejprve ověřte předchozí zaslání nebo kontaktujte správce; neposílejte ji znovu z jiné karty." : response.status === 503 && body?.code === "request_pending" ? "Žádost se ještě zpracovává. Vyčkejte a potom zopakujte stejnou žádost s novým ověřením." : correctable ? "Žádost byla odmítnuta před odesíláním. Opravte e-mail nebo parametry a odešlete novou žádost." : response.status === 400 ? "Tento pokus byl odmítnut, ale předchozí výsledek nelze bezpečně určit. Zachováváme původní žádost; nejprve ověřte předchozí zaslání." : response.status === 403 ? "Ověření proti robotům vypršelo nebo se nezdařilo. Zkuste nové ověření." : response.status === 429 ? "Služba je dočasně vytížená. Zkuste to za chvíli." : "Odeslání nebylo potvrzeno. Zkuste to později; stejné požadavky chráníme proti duplicitnímu odeslání.");
-        if (demoDenied) setMessage(`ETF Kompas je demonstrační projekt. Zasílání materiálů je dostupné pouze předem schváleným příjemcům. Kalkulačku můžete používat bez omezení.${correctable ? " Adresu můžete opravit a podat novou žádost." : " Tento pokus nebyl odeslán, ale výsledek předchozího pokusu zůstává nejasný. Zachováváme původní žádost; nejprve ověřte předchozí zaslání."}`);
+        if (demoDenied) setMessage(`ETF Kompas je demonstrační projekt. Zasílání materiálů je dostupné pouze předem schváleným testovacím příjemcům. Kalkulačku můžete používat bez omezení.${correctable ? " Adresu můžete opravit a podat novou žádost." : " Tento pokus nebyl odeslán, ale výsledek předchozího pokusu zůstává nejasný. Zachováváme původní žádost; nejprve ověřte předchozí zaslání."}`);
       }
     } catch {
       currentRequest.uncertain = true;
@@ -118,7 +118,7 @@ export function EmailForm({ id, buttonText, kind, delivery, scenario }: {
       onPointerDownCapture={() => trackAnalytics({ name: "form_start", material: kind }, `form_start:${kind}`)}
       onInvalidCapture={() => trackAnalytics({ name: "form_error", material: kind, error: "validation" })}
       aria-label={kind === "report" ? "Podrobný report na e-mail" : "Průvodce ETF na e-mail"} aria-busy={status === "pending"}>
-      <p id={`${id}-demo`} className="form-availability"><strong>Demonstrační režim:</strong> report a PDF zasíláme pouze předem schváleným příjemcům. Kalkulačka je dostupná všem.</p>
+      <p id={`${id}-demo`} className="form-availability"><strong>Demonstrační režim:</strong> report a PDF zasíláme pouze předem schváleným testovacím příjemcům. Kalkulačka je dostupná všem.</p>
       <label htmlFor={`${id}-email`}>Váš e-mail <span className="muted">(povinné)</span></label>
       <div className="email-row">
         {/* No name: a native submit without JavaScript cannot put the email in the URL. */}
@@ -131,7 +131,7 @@ export function EmailForm({ id, buttonText, kind, delivery, scenario }: {
       </>}
       <p id={`${id}-availability`} className="form-availability">{!delivery.enabled ? "Odesílání je momentálně nedostupné. Zkuste to později." : kind === "report" && !scenario && !retrying ? "Pro zaslání reportu nejprve vyplňte platné parametry kalkulačky." : token && ready && !failed ? "Ověření dokončeno. Můžete požádat o zaslání materiálu." : "Pro odeslání je potřeba dokončit ověření proti robotům."}</p>
       {(failed || verificationError) && <p className="form-feedback error" role="alert">{verificationError || "Ověření se nepodařilo načíst. Zkontrolujte připojení a obnovte stránku."}</p>}
-      <p id={`${id}-privacy`} className="form-privacy">V tomto nekomerčním demu zadáváte e-mail pro jednorázové doručení {kind === "report" ? "vyžádaného reportu" : "PDF průvodce"} přes Resend. Vlastní databázi kontaktů nevedeme; k automatickému marketingu, newsletteru ani ETF Hlídači vás nepřihlašujeme. <Link href="/ochrana-osobnich-udaju">Jak zpracováváme osobní údaje</Link>.</p>
+      <p id={`${id}-privacy`} className="form-privacy">V tomto nekomerčním demu zpracujeme zadaný e-mail pro ověření žádosti a případné jednorázové doručení {kind === "report" ? "vyžádaného reportu" : "PDF průvodce"} přes Resend předem schválenému testovacímu příjemci. Nevytváříme databázi kontaktů získaných z formulářů. K automatickému marketingu, newsletteru ani ETF Hlídači vás nepřihlašujeme. <Link href="/ochrana-osobnich-udaju">Jak zpracováváme osobní údaje</Link>.</p>
       <p id={`${id}-feedback`} className={`form-feedback ${status === "error" ? "error" : ""}`} role="status" aria-live="polite">{message}</p>
       {retrying && <p className="form-feedback">{retryBlocked ? "Opakování je zastavené. " : "Opakování použije původní adresu i scénář a vyžaduje nové ověření proti robotům. "}Dokud výsledek neověříte, neobnovujte stránku ani neposílejte žádost z jiné karty: paměť žádosti by se ztratila a mohl by vzniknout další e-mail. Po potvrzení lze zaslat novou žádost.</p>}
       <noscript><p>Pro bezpečné odeslání formuláře je potřeba JavaScript.</p></noscript>

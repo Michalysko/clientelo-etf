@@ -68,7 +68,7 @@ export function createDeliveryHandler(kind: MaterialKind, deps: Dependencies) {
       const body = validateMaterialRequest(kind, await readBody(request));
       phase = "turnstile";
       if (!await deps.verify(config, body.turnstileToken, kind)) { log("turnstile", new DeliveryError(403, "verification_failed")); return reply(403, "Ověření proti robotům se nezdařilo nebo vypršelo. Zkuste ho znovu."); }
-      if (!isDemoRecipientAllowed(body.email, config.demoAllowedEmails)) return reply(403, "ETF Kompas je demonstrační projekt. Zasílání materiálů je dostupné pouze předem schváleným příjemcům. Kalkulačku můžete používat bez omezení.", "demo_not_allowed");
+      if (!isDemoRecipientAllowed(body.email, config.demoAllowedEmails)) return reply(403, "ETF Kompas je demonstrační projekt. Zasílání materiálů je dostupné pouze předem schváleným testovacím příjemcům. Kalkulačku můžete používat bez omezení.", "demo_not_allowed");
       phase = "content";
       const content = kind === "report" ? createReport(body.scenario!) : createGuideEmail();
       const outgoing: OutgoingEmail = { ...content, to: body.email, requestId: body.requestId, material: kind };

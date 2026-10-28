@@ -76,9 +76,9 @@ export default function Home() {
         </section>
         <section className="privacy-section wrap" id="osobni-udaje" aria-labelledby="privacy-title">
           <h2 id="privacy-title">Jednorázový materiál. Žádný automatický odběr.</h2>
-          <p>Zadaný e-mail a u reportu parametry scénáře zpracujeme pro zaslání vyžádaného materiálu. Zprávu a přílohu předáme službě Resend, která pro doručení zpracovává příjemce i obsah e-mailu. V aplikaci nevytváříme databázi kontaktů ani je nezapisujeme do aplikačních logů.</p>
+          <p>Zadaný e-mail a u reportu parametry scénáře zpracujeme při ověření žádosti. Materiály zasíláme pouze předem schváleným testovacím příjemcům. Jen schválený požadavek předáme službě Resend, která pro doručení zpracovává příjemce i obsah zprávy. Aplikace nevytváří databázi kontaktů získaných z formulářů a adresy nezapisuje do aplikačních logů.</p>
           <p>Formuláře chrání Cloudflare Turnstile, které při ověření zpracovává technické údaje prohlížeče. Zadáním e-mailu se nepřihlašujete k newsletteru ani ETF Hlídači. <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">Soukromí u Cloudflare ↗</a> · <a href="https://resend.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer">Soukromí u Resend ↗</a></p>
-          <p><strong>ETF Kompas je osobní nekomerční demo pro výběrové řízení Clientelo.</strong> Správce a skutečný rozsah zpracování jsou popsány na samostatné stránce; neověřené položky jsou označeny k doplnění před veřejným spuštěním. <Link href="/ochrana-osobnich-udaju">Ochrana osobních údajů</Link>.</p>
+          <p><strong>ETF Kompas je osobní nekomerční demo pro výběrové řízení Clientelo.</strong> Podrobnosti o současném zpracování, otevřených právních otázkách dema a podmínkách případného rozšíření provozu uvádí stránka <Link href="/ochrana-osobnich-udaju">Ochrana osobních údajů</Link>.</p>
         </section>
       </main>
       <footer className="site-footer wrap"><a className="brand" href="#">ETF<span>Kompas</span></a><p>V číslech jasno. V rozhodnutí vlastní směr.</p><span>Vzdělávací projekt · Bez investičního poradenství</span><Link href="/ochrana-osobnich-udaju">Ochrana osobních údajů</Link></footer>

@@ -36,7 +36,10 @@ function renderPrivacy(contact: ReturnType<typeof privacy.getPrivacyContact>) {
 
 test("privacy page renders actual processing, unresolved items and rights without third-party widgets", () => {
   const html=renderPrivacy(null);
-  for(const phrase of ["Michal Růžička", "nekomerční", "Clientelo", "jednorázově", "K doplnění / ověření", "právní základ", "vlastní databázi kontaktů", "Resend", "Cloudflare", "Vercel", "Pro a Enterprise", "mimo EHP", "Úřadu pro ochranu osobních údajů"]) assert.ok(html.includes(phrase),phrase);
+  for(const phrase of ["Michal Růžička", "nekomerční", "Clientelo", "jednorázového", "K doplnění / ověření", "právní základ", "databázi kontaktů získaných z formulářů", "Resend", "Cloudflare", "Vercel", "Pro a Enterprise", "mimo EHP", "Úřadu pro ochranu osobních údajů", "předem schváleným testovacím příjemcům", "Nepovolený požadavek není předán Resendu", "primární zpracování ve Spojených státech", "nepředstavuje jejich právní vyřešení", "Otevřená otázka současného dema", "serverové konfiguraci"]) assert.ok(html.includes(phrase),phrase);
+  assert.ok(!html.includes("DEMO_ALLOWED_EMAILS"));
+  assert.ok(!/dvě[^<.]*adres|přesně 2/i.test(html));
+  assert.ok(!html.includes("před zveřejněním této změny"));
   assert.match(html, /<time\s+datetime="2026-10-28"/i);
   assert.equal((html.match(/<h1[ >]/g)??[]).length,1);
   assert.ok(html.includes('id="ochrana-obsah"'));
@@ -56,5 +59,5 @@ test("configured public contact replaces only its missing-contact notice", () =>
   assert.ok(!html.includes("Veřejný kontakt, právní základy"));
   assert.ok(!html.includes("kontakt pro žádosti musí správce doplnit"));
   // A configured contact alone must not falsely declare the remaining legal items complete.
-  assert.ok(html.includes("právní základ"));assert.ok(html.includes("ještě nejsou všechny potvrzené"));
+  assert.ok(html.includes("právní základ"));assert.ok(html.includes("dosud nejsou plně uzavřeny"));
 });
