@@ -28,8 +28,11 @@ export default function Home() {
           <div className="hero-copy">
             <p className="eyebrow"><span className="signal" /> MÉNĚ DOHADŮ. VÍCE PŘEHLEDU.</p>
             <h1 id="hero-title">Stejný index.<br />Jiné poplatky.<br /><em>Jaký je rozdíl?</em></h1>
-            <p className="hero-description">Porovnejte americká ETF na S&amp;P 500. Zjistěte, co mohou průběžné poplatky udělat s vaší investicí za několik desítek let.</p>
-            <a className="text-link hero-jump" href="#kalkulacka">Spočítat vlastní scénář <span aria-hidden="true">↓</span></a>
+            <p className="hero-description">Porovnejte ETF na S&amp;P 500. Výsledek hned. Podrobný report k výpočtu i průvodce ETF pro začátečníky zdarma na e-mail.</p>
+            <nav className="hero-materials" aria-label="Materiály zdarma na e-mail">
+              <a className="hero-report-link" href="#report-na-email">Získat report zdarma <span aria-hidden="true">↓</span></a>
+              <a className="hero-guide-link" href="#pruvodce-na-email">Průvodce zdarma <span aria-hidden="true">↓</span></a>
+            </nav>
             <div className="editorial-note"><span className="note-index">01 / PRINCIP</span><p>Výnos trhu neznáme.<br /><strong>Nákladovost porovnat můžeme.</strong></p><p className="small muted">Obě ETF počítáme se stejným hrubým výnosem. Rozdíl v modelu tak tvoří pouze nákladovost.</p></div>
             <ul className="hero-benefits" aria-label="Výhody ETF Kompasu">
               <li><span className="benefit-mark" aria-hidden="true">↗</span><div><h2>Skutečná data</h2><p>Poplatky ETF vycházejí z oficiálních zdrojů správců fondů.</p></div></li>
@@ -61,7 +64,7 @@ export default function Home() {
         <section className="guide-section" id="pruvodce" aria-labelledby="guide-title">
           <div className="wrap guide-grid">
             <div><p className="eyebrow">03 / PRVNÍ KROK NEMUSÍ BÝT VELKÝ</p><h2 id="guide-title">V investování se<br />teprve <em>rozkoukáváte?</em></h2><p>Získejte zdarma sedmistránkový PDF průvodce „ETF od nuly: 7 věcí, které byste měli vědět před první investicí“. Co je index, jak číst nákladovost a na co se ptát před první investicí.</p><ul className="guide-topics"><li>ETF bez finančního žargonu</li><li>Poplatky v souvislostech</li><li>Americké ETF a evropská pravidla</li></ul></div>
-            <div className="guide-offer"><span className="note-index">PRŮVODCE ETF / ZDARMA</span><h3>Nejdřív pochopit.<br />Potom se rozhodnout.</h3><EmailForm id="guide" buttonText="Chci průvodce zdarma" kind="guide" delivery={delivery} /></div>
+            <div className="guide-offer" id="pruvodce-na-email" tabIndex={-1}><span className="note-index">PRŮVODCE ETF / ZDARMA</span><h3>Nejdřív pochopit.<br />Potom se rozhodnout.</h3><EmailForm id="guide" buttonText="Chci průvodce zdarma" kind="guide" delivery={delivery} /></div>
           </div>
         </section>
         <section className="disclosures wrap" id="dostupnost" aria-labelledby="disclosures-title">

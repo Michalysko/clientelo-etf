@@ -56,6 +56,7 @@ export function Calculator({ delivery }: { delivery: DeliveryUiConfig }) {
         {result ? <>
           <div className="difference-box">
             <div><span>Modelovaný rozdíl v konečné hodnotě</span><strong>{difference > 0 && difference < 1 ? "Méně než 1 Kč" : money(difference)}</strong></div>
+            <p className="model-assumptions">{money(monthlyContribution)} měsíčně · {percent(horizon)} let · předpokládaný hrubý výnos {percent(grossAnnualReturnPercent)} % ročně</p>
             <p>{difference === 0 ? "Při těchto vstupech je modelový výsledek stejný." : `${winner.ticker} má v tomto scénáři vyšší konečnou hodnotu.`} Rozdíl tvoří pouze nákladovost při stejném hrubém výnosu. Nejde o částku skutečně zaplacených poplatků.</p>
           </div>
           <p className="contributions">Celkem vložíte <strong>{money(result.first.totalContributions)}</strong></p>
@@ -79,7 +80,7 @@ export function Calculator({ delivery }: { delivery: DeliveryUiConfig }) {
           ))}
         </div>
       </div>
-      <div className="report-offer"><p className="eyebrow">VÁŠ SCÉNÁŘ PODROBNĚ</p><p className="report-description">Report v e-mailu obsahuje roční přehled investice, porovnání nákladovosti obou ETF a předpoklady vašeho výpočtu.</p><EmailForm id="report" buttonText="Zaslat podrobný výpis na e-mail" kind="report" delivery={delivery} scenario={result ? {firstTicker, secondTicker, monthlyContribution, years: horizon, grossAnnualReturnPercent, initialInvestment: 0} : null} /></div>
+      <div className="report-offer" id="report-na-email" tabIndex={-1}><p className="eyebrow">VÁŠ SCÉNÁŘ PODROBNĚ</p><p className="report-description">Report v e-mailu obsahuje roční přehled investice, porovnání nákladovosti obou ETF a předpoklady vašeho výpočtu.</p><EmailForm id="report" buttonText="Zaslat podrobný výpis na e-mail" kind="report" delivery={delivery} scenario={result ? {firstTicker, secondTicker, monthlyContribution, years: horizon, grossAnnualReturnPercent, initialInvestment: 0} : null} /></div>
       <details className="methodology" id="metodika"><summary>Metodika a limity výpočtu</summary><p>Měsíční růstový faktor je ((1 + g) × (1 − f))<sup>1/12</sup>, kde g je předpokládaný hrubý roční výnos a f roční nákladovost, obojí převedené z procent na desetinné číslo. Zůstatek nejprve zhodnotíme a poté přičteme měsíční vklad. Nákladovost je zjednodušeně rozložena do celého roku.</p><p>Počítáme od nuly, s konstantním výnosem, reinvestováním a možností zlomkových podílů. Rozdíl zahrnuje i vliv složeného růstu, není součtem skutečně stržených poplatků. Částky zaokrouhlujeme pouze pro zobrazení.</p><p>Model přijímá celé roky 0–{INVESTMENT_LIMITS.maxYears}, vklad do {money(INVESTMENT_LIMITS.maxMonthlyContribution)} a hrubý výnos nad −100 % až do {INVESTMENT_LIMITS.maxGrossAnnualReturnPercent} %. Extrémní výsledky odmítne. Jde o technické limity, nikoli předpoklady trhu.</p></details>
     </section>
   );

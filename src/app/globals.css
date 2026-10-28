@@ -34,7 +34,13 @@ h1 em, h2 em { font-family: Georgia, "Times New Roman", serif; font-weight: 400;
 h1 em { display: inline-block; padding-bottom: 7px; border-bottom: 3px solid var(--green); }
 .hero-description { font-size: 17px; line-height: 1.75; max-width: 420px; color: var(--muted); margin: 28px 0; }
 .text-link { font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 35px; min-height: 44px; }
-.hero-jump { margin-bottom: 44px; }
+.hero-materials { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-bottom: 36px; }
+.hero-materials a { display: inline-flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; font-size: 13px; line-height: 1.5; }
+.hero-report-link { padding: 10px 12px; background: var(--ink); color: var(--white); border-radius: 3px; font-weight: 600; text-decoration: none; }
+.hero-report-link:hover { background: #245549; }
+.hero-guide-link { flex: 0 1 auto; padding: 9px 12px; border: 1px solid var(--ink); border-radius: 3px; background: transparent; color: var(--ink); font-weight: 600; text-decoration: none; }
+.hero-guide-link:hover { background: var(--green); }
+#report-na-email, #pruvodce-na-email { scroll-margin-top: 24px; }
 .editorial-note { border-top: 1px solid var(--ink); max-width: 370px; padding-top: 20px; }
 .note-index { color: var(--muted); }
 .editorial-note p:not(.small) { font-size: 20px; line-height: 1.5; letter-spacing: -.025em; margin: 20px 0 10px; }
@@ -89,6 +95,7 @@ h1 em { display: inline-block; padding-bottom: 7px; border-bottom: 3px solid var
 .difference-box > div { min-width: 0; width: 100%; }
 .difference-box strong { display: block; font-size: 44px; line-height: 1.15; letter-spacing: -.05em; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .difference-box > p { font-size: 12px; line-height: 1.6; margin: 0; }
+.difference-box .model-assumptions { padding-bottom: 10px; border-bottom: 1px solid #173d3530; width: 100%; font-weight: 500; }
 .result-disclaimer { color: #c2d0c4; font-size: 11px; line-height: 1.8; margin: 15px 0 0; }
 .result-disclaimer a { color: var(--white); }
 .calculation-error { font-size: 14px; line-height: 1.8; border-left: 3px solid var(--green); padding: 10px 14px; }
@@ -229,9 +236,12 @@ h2 { font-size: clamp(26px, 3vw, 39px); line-height: 1.2; letter-spacing: -.05em
   .wrap { width: calc(100% - 36px); } .site-header { height: 72px; gap: 10px; }
   .brand { font-size: 21px; gap: 5px; } .brand svg { width: 27px; height: 27px; margin-right: 3px; }
   .site-header nav .desktop-link { display: none; } .site-header nav a { font-size: 11px; gap: 9px; }
-  .hero { grid-template-columns: 1fr; padding-block: 14px 32px; gap: 10px; } .hero-copy { padding-top: 0; }
-  .hero-copy .eyebrow { font-size: 9px; margin-bottom: 12px; } h1 { font-size: clamp(38px, 10.8vw, 59px); margin: 0 0 12px; line-height: 1.06; }
-  .hero-description { font-size: 14px; line-height: 1.65; margin: 12px 0 4px; max-width: 500px; } .hero-jump { margin-bottom: 0; }
+  .hero { grid-template-columns: 1fr; padding-block: 10px 32px; gap: 10px; } .hero-copy { padding-top: 0; }
+  .hero-copy .eyebrow { font-size: 9px; margin-bottom: 8px; } h1 { font-size: clamp(38px, 10.8vw, 59px); margin: 0 0 8px; line-height: 1.06; }
+  .hero-description { font-size: 14px; line-height: 1.5; margin: 8px 0; max-width: 500px; }
+  .hero-materials { gap: 10px; margin-bottom: 0; }
+  .hero-materials a { font-size: 12px; }
+  .hero-report-link { flex-shrink: 0; }
   .editorial-note { display: none; } .hero-risk { font-size: 11px; line-height: 1.7; margin-top: 12px; max-width: 500px; }
   .calculator-inputs { padding: 21px 18px 15px; } .calculator-heading { margin-bottom: 20px; } .calculator-heading h2 { font-size: 16px; }
   .model-badge { font-size: 7px; padding: 4px; } .input-grid { grid-template-columns: 1fr 1fr; gap: 15px 12px; } .amount-field { grid-column: 1 / -1; }
