@@ -1,6 +1,8 @@
 # Konverzní analytika — Umami Cloud
 
-Stav implementace: 27. 10. 2026. Bez deploymentu a skutečných analytických událostí do produkčního účtu. Žádné nové závislosti. Serverové API, Resend, Turnstile a výpočetní model se nemění.
+Analytika je implementovaná a nasazená v demonstrační aplikaci. Původní popis a výsledky oprav níže pocházejí z 27. 10. 2026; tehdejší implementační krok sám neprováděl deployment ani skutečné analytické požadavky. Reklamní kampaně neproběhly. Možnosti filtrování a deduplikace v konkrétním dashboardu nejsou tímto dokumentem potvrzené.
+
+Aktuální demo doručuje materiály pouze předem schváleným testovacím příjemcům. Odpověď demo_not_allowed nevytváří form_error ani material_accepted; platný pokus zůstává form_submit po souhlasu. To omezuje interpretaci konverzí běžných návštěvníků; demo není testem veřejné kampaně.
 
 ## Konfigurace a hranice
 
@@ -63,7 +65,7 @@ Výhradní schválené odkazy reklam (potvrzeno vlastníkem 28. 10. 2026):
 - A: https://etf-kompas-zeta.vercel.app/?utm_content=ad_a
 - B: https://etf-kompas-zeta.vercel.app/?utm_content=ad_b
 
-Hypotéza A: sdělení o nákladovosti zvýší zájem o personalizovaný report. Hypotéza B: vzdělávací sdělení zvýší zájem o průvodce. Jsou to návrhy hypotéz, ne hotové reklamy ani výsledky experimentu. Pro férové srovnání držet stejné publikum, období a rozpočet. Bez nákladových dat reklam nelze určit cenu za konverzi.
+Hypotéza A: sdělení o nákladovosti zvýší zájem o personalizovaný report. Hypotéza B: vzdělávací sdělení zvýší zájem o průvodce. Přesné reklamní texty jsou připravené v [reklamním plánu](ads-and-conversions.md); směrové hypotézy nejsou výsledky experimentu a kampaně nebyly spuštěné. Pro férové srovnání držet stejné publikum, období a rozpočet. Bez nákladových dat reklam nelze určit cenu za konverzi.
 
 ## Interpretace a funnel
 
@@ -74,7 +76,7 @@ Jeden ručně poslaný pageview (bez name) + jeden pojmenovaný landing_view. Au
 - Návštěva a unikátní návštěvník: odvozené metriky služby; nejsou důkazem počtu fyzických osob a neodpovídají počtu HTTP požadavků. Umami používá IP/UA a rotující sůl.
 - Konverze: potvrzená odpověď aplikace po přijetí Resendem, nikoli doručení do schránky, unikátní kontakt nebo nově vytvořený e-mail. Idempotentní opakovaný požadavek může také skončit 202.
 
-Dva funnely: landing_view → form_view → form_start → form_submit → material_accepted, filtrovat material=report nebo guide; zvolit konzistentní časové okno, například 60 minut. Změna kalkulačky není povinný krok. Porovnávat konvertující měřené návštěvy ve stejném funnelu, ne dělit prosté součty opakovaných pokusů návštěvníky a nepovažovat to automaticky za procento osob. Měření pokrývá pouze souhlasící a neblokované prohlížeče; poměr nelze zobecnit na všechny návštěvníky. Žádné výsledky nejsou zatím k dispozici.
+Dva zamýšlené materiálové funnely: landing_view → form_view → form_start → form_submit → material_accepted. Material=report/guide filtrovat pouze na formulářových krocích, pokud to report umožňuje; společný landing_view material nemá a globální filtr by jej mohl odstranit. Použitelnost filtrů a jednotku deduplikace ověřit v konkrétním účtu. Zvolit stejné Window, například 60 minut mezi sousedními kroky, nikoli automaticky pro celou cestu. Změna kalkulačky není povinný krok. Porovnávat konvertující měřené návštěvy ve stejném funnelu, ne dělit prosté součty opakovaných pokusů návštěvníky a nepovažovat to automaticky za procento osob. Měření pokrývá pouze souhlasící a neblokované prohlížeče; poměr nelze zobecnit na všechny návštěvníky. Žádné výsledky nejsou zatím k dispozici.
 
 ## Ověření bez skutečných e-mailů
 
@@ -83,7 +85,7 @@ Dva funnely: landing_view → form_view → form_start → form_submit → mater
 3. Pro izolovaný test aktuálního skutečného trackeru uložit veřejný script.js do dočasného souboru, nastavit pouze pro testovací proces `UMAMI_TRACKER_TEST_FILE` na jeho cestu a spustit `npm test`. VM má mock fetch; nic neposílá do Umami. Nikdy tento test nenahrazovat vyhodnocením trackeru v neizolovaném Node/browser prostředí.
 4. `npm run lint`; `$env:NODE_OPTIONS='--use-system-ca'; npm run build -- --webpack` v PowerShellu. Bez změn Application Control/TLS ověřování.
 5. Po samostatně schváleném deploymentu: čistý profil, Network Preserve log, filtrovat umami. Před volbou/po odmítnutí žádný script.js ani gateway požadavek. Po povolení právě jeden pageview + landing_view, ručně prohlédnout payload i HTTP Referer. Žádná citlivá data ani další metadata. Odvolat; po reloadu žádné další Umami požadavky. Již odeslané nelze stáhnout zpět.
-6. Projít A/B URL, obě cesty, viewport form_view a změny kalkulačky. V účtu ověřit Events, UTM, Funnels a skutečné možnosti jejich filtrů. Nezapisovat smyšlené výsledky. Pozitivní reálný emailový test vyžaduje další výslovný souhlas vlastníka; zatím jsou pouze mocky.
+6. Projít A/B URL, obě cesty, viewport form_view a změny kalkulačky. V účtu ověřit Events, UTM, Funnels a skutečné možnosti jejich filtrů. Nezapisovat smyšlené výsledky. Každý další reálný e-mailový test vyžaduje výslovný souhlas vlastníka a schváleného testovacího příjemce. Automatické testy používají pouze mocky; dřívější skutečné doručení obou materiálů potvrdil vlastník, nikoli tato sada testů.
 
 ## Primární zdroje
 

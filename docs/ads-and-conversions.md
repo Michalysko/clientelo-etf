@@ -1,6 +1,8 @@
 # Reklamní varianty A/B a vyhodnocení konverzí
 
-Připraveno 28. 10. 2026 pro odevzdání náborového zadání Junior AI Developer, Clientelo. Základ auditu: commit `653798ec439a4323217943a47aafa8676bfbff20`. Reklamy nejsou spuštěné. Dokument neobsahuje výsledky kampaní. Obě varianty vedou na stejnou landing page a oba materiály jsou dostupné všem; testuje se sdělení reklamy, nikoli dvě verze webu. Landing page ani měřicí kód nebyly tímto krokem změněny.
+Připraveno 28. 10. 2026 pro odevzdání náborového zadání Junior AI Developer, Clientelo. Základ auditu: commit `653798ec439a4323217943a47aafa8676bfbff20`. Reklamy nejsou spuštěné. Dokument neobsahuje výsledky kampaní. Obě varianty vedou na stejnou landing page; testuje se sdělení reklamy, nikoli dvě verze webu. Nabídky obou materiálů vidí všichni, ale současné demo doručuje pouze předem schváleným testovacím příjemcům. Kalkulačka je veřejná. Landing page ani měřicí kód nebyly tímto krokem změněny.
+
+Současný allowlist záměrně omezuje konverze běžných návštěvníků. Níže uvedený plán a hypotéza 5 % se vztahují k případnému budoucímu, právně a provozně připravenému veřejnému doručování; nelze je ověřit na běžném reklamním publiku v nynějším demu. Otevřené otázky také současného provozu popisuje [revize soukromí](privacy-review.md).
 
 ## 1. Schválená atribuce bez změny kódu
 
@@ -24,7 +26,7 @@ Při původním auditu bylo chování ověřeno skutečným kontrolerem s mockov
 - **Motivace:** finanční rozdíl způsobený náklady ETF, ověřený na vlastním modelovém scénáři. Nadpis nesmí být interpretován jako garantovaná úspora nebo příslib výnosu; landing page vysvětluje modelovaný rozdíl konečných hodnot.
 - **Navržená cílová skupina:** česky mluvící dospělí začínající drobní investoři, kteří již znají pojem ETF a chtějí porovnat průběžné náklady. Jde o návrh publika, nikoli tvrzení o spuštěném cílení nebo parametrech reklamní platformy.
 - **Schválená cílová URL:** https://etf-kompas-zeta.vercel.app/?utm_content=ad_a
-- **Směrová hypotéza:** A může zvýšit zájem o report; průvodce zůstává dostupný a konverze se počítají i u něj.
+- **Směrová hypotéza:** A může zvýšit zájem o report; nabídka průvodce zůstává viditelná a přijaté žádosti se počítají i u něj, v mezích demonstračního omezení.
 
 ### Varianta B — Jednoduchý začátek
 
@@ -34,7 +36,7 @@ Při původním auditu bylo chování ověřeno skutečným kontrolerem s mockov
 - **Motivace:** srozumitelné porovnání a vzdělávání, bez potřeby zadávat e-mail pro základní výsledek.
 - **Navržená cílová skupina:** česky mluvící dospělí začátečníci se zájmem pochopit ETF. Pro samotné A/B srovnání použít stejné publikum jako u A; nesměšovat vliv sdělení s jiným cílením.
 - **Schválená cílová URL:** https://etf-kompas-zeta.vercel.app/?utm_content=ad_b
-- **Směrová hypotéza:** B může zvýšit zájem o průvodce; report zůstává dostupný a konverze se počítají i u něj.
+- **Směrová hypotéza:** B může zvýšit zájem o průvodce; nabídka reportu zůstává viditelná a přijaté žádosti se počítají i u něj, v mezích demonstračního omezení.
 
 Schválené odkazy obsahují pouze utm_content. Nerozlišují jménem platformu, medium ani campaign; není správné z nich automaticky dovozovat Meta nebo placenou návštěvnost. Varianta se rozliší přes UTM Content a vlastnost ad_variant. Ostatní povolené UTM v knihovně zůstávají technickou možností, nikoli součástí těchto schválených reklamních odkazů.
 
@@ -51,7 +53,9 @@ Všech osm pojmenovaných událostí dostává `ad_variant=ad_a/ad_b/unknown`. B
 | `form_start` | První focus/pointer interakce s formulářem | Jednou na materiál, uvolní se až po `form_view`. Je to interakce, ne důkaz napsaného e-mailu. |
 | `form_submit` | Platný pokus o POST po klientské validaci a splnění podmínek odesílání | Ne pouhé kliknutí, ne samotné zobrazení Turnstile. `attempt=first/repeat` rozlišuje pokusy. |
 | `material_accepted` | Klient obdržel HTTP 202 a JSON `status=accepted` | Zachovává `material=report/guide`, `attempt` i variantu. Přijetí Resendem není doručení ani unikátní e-mail; retry může vrátit původní potvrzení. |
-| `form_error` | Obecná chyba pokusu nebo validace | `material`, kategorie validation/verification/busy/server/network; není důkaz chyby poskytovatele. |
+| `form_error` | Obecná chyba pokusu nebo validace; demo odmítnutí se vynechává | `material`, kategorie validation/verification/busy/server/network; není důkaz chyby poskytovatele. |
+
+Odpověď `demo_not_allowed` nevytváří `form_error` ani `material_accepted`; skutečný pokus po souhlasu zůstává `form_submit`. Zamítnutí příjemce tedy není běžnou validační chybou ani konverzí.
 
 Formulářové události mají `material`, ale landing_view, calculator_change a etf_change jej nemají. **Globální filtr material=report/guide proto nesmí odstranit společné úvodní kroky funnelu.** Materiál je třeba filtrovat na odpovídajících krocích, pokud to konkrétní report umožňuje.
 
