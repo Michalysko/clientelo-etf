@@ -9,7 +9,7 @@ import { DeliveryError, sendResend, verifyTurnstile, resendIdempotencyKey } from
 import { compareInvestments } from "../src/lib/investment.ts";
 
 // Explicit fakes only. Never load .env.local or call a provider in this suite.
-const config = {apiKey: "unit-test-only", from: "ETF Kompas <unit@etf.michalwebdeveloper.cz>", turnstileSecret: "unit-test-only", siteKey: "unit-test-only", origin: "https://example.com"};
+const config = {apiKey: "unit-test-only", from: "ETF Kompas <unit@etf.michalwebdeveloper.cz>", turnstileSecret: "unit-test-only", siteKey: "unit-test-only", origin: "https://example.com", demoAllowedEmails: ["reader@example.com", "owner@example.com"]};
 const scenario = {firstTicker: "SPY", secondTicker: "SPYM", monthlyContribution: 5000, years: 20, grossAnnualReturnPercent: 7, initialInvestment: 0 as const};
 const requestId = "12345678-1234-4234-8234-123456789abc";
 const payload = {requestId, email: "reader@example.com", website: "", turnstileToken: "unit-token", scenario};
@@ -191,7 +191,7 @@ test("Resend adapter rejects missing acknowledgement, errors and network failure
 });
 test("configuration requires protection and approved sender; no test-key bypass", () => {
   assert.throws(()=>readDeliveryConfig({}));
-  const env={RESEND_API_KEY:config.apiKey,RESEND_FROM_EMAIL:config.from,TURNSTILE_SECRET_KEY:config.turnstileSecret,NEXT_PUBLIC_TURNSTILE_SITE_KEY:config.siteKey,APP_ORIGIN:config.origin};
+  const env={RESEND_API_KEY:config.apiKey,RESEND_FROM_EMAIL:config.from,TURNSTILE_SECRET_KEY:config.turnstileSecret,NEXT_PUBLIC_TURNSTILE_SITE_KEY:config.siteKey,APP_ORIGIN:config.origin,DEMO_ALLOWED_EMAILS:config.demoAllowedEmails.join(",")};
   assert.equal(readDeliveryConfig(env).origin,config.origin);
   assert.throws(()=>readDeliveryConfig({...env,RESEND_FROM_EMAIL:"unit@other.example"}));
   assert.throws(()=>readDeliveryConfig({...env,APP_ORIGIN:"https://example.com/private"}));

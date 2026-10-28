@@ -6,7 +6,7 @@ import { sendResend, resendIdempotencyKey, DeliveryError, verifyTurnstile } from
 import type { OutgoingEmail } from "../src/lib/email/providers.ts";
 import { createGuideEmail, createReport } from "../src/lib/email/content.ts";
 
-const config = {apiKey:"fake-only", from:"unit@example.com", origin:"https://example.com", siteKey:"fake-only", turnstileSecret:"fake-only"};
+const config = {apiKey:"fake-only", from:"unit@example.com", origin:"https://example.com", siteKey:"fake-only", turnstileSecret:"fake-only", demoAllowedEmails:["reader@example.com","owner@example.com"]};
 const id = "12345678-1234-4234-8234-123456789abc", secondId = "12345678-1234-4234-8234-123456789abd";
 const scenario = {firstTicker:"SPY",secondTicker:"SPYM",monthlyContribution:5000,years:20,grossAnnualReturnPercent:7,initialInvestment:0 as const};
 const pdf = Buffer.from("%PDF-mock-only");

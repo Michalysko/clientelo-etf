@@ -69,6 +69,56 @@ const delivery={enabled:true,siteKey:'unit-only'};
 const scenario={firstTicker:'SPY',secondTicker:'SPYM',monthlyContribution:5000,years:20,grossAnnualReturnPercent:7,initialInvestment:0};
 const props=(kind:'report'|'guide')=>({id:kind,kind,buttonText:kind,delivery,...(kind==='report'?{scenario}:{})});
 
+test('both demo forms disclose the restriction before the email field without exposing recipients',()=>{
+  const h=harness();
+  for(const kind of ['report','guide'] as const){
+    const owner=h.owner();h.render(owner,h.form,props(kind));const nodes=h.nodes(owner.tree);
+    const notice=nodes.find(n=>n.props.id===`${kind}-demo`),input=nodes.find(n=>n.props.type==='email');
+    assert.ok(nodes.indexOf(notice)<nodes.indexOf(input));assert.ok(JSON.stringify(notice).includes('předem schváleným'));
+    assert.ok(!JSON.stringify(notice).includes('@'));assert.ok(input.props['aria-describedby'].includes(`${kind}-demo`));
+  }
+});
+
+test('demo denial is not a validation error/conversion; correction creates a fresh request for both forms',async()=>{
+  for(const kind of ['report','guide'] as const){
+    const h=harness(true),owner=h.owner();h.context({ready:true,failed:false});h.status(403);h.code('demo_not_allowed');
+    let currentProps=props(kind);const render=()=>h.render(owner,h.form,currentProps);
+    const submit=()=>h.nodes(owner.tree).find(n=>n.type==='form').props.onSubmit({preventDefault(){}});
+    render();h.instances[0].options.callback('first');render();await submit();render();
+    assert.equal(h.nodes(owner.tree).find(n=>n.props.type==='email').props.disabled,false);
+    assert.ok(JSON.stringify(owner.tree).includes('demonstrační projekt'));
+    assert.equal(h.events.filter(e=>e.name==='form_submit').length,1);
+    assert.equal(h.events.filter(e=>e.name==='form_error'||e.name==='material_accepted').length,0);
+    h.nodes(owner.tree).find(n=>n.props.type==='email').props.ref.current.value='corrected@example.com';
+    currentProps={...props(kind),...(kind==='report'?{scenario:{...scenario,monthlyContribution:12000}}:{})};
+    h.status(202);h.code(undefined);h.instances[0].options.callback('second');render();
+    let release!:()=>void;h.gate(new Promise<void>(resolve=>{release=resolve;}));const pending=submit();await submit();
+    assert.equal(h.requests.length,2);release();await pending;render();
+    assert.notEqual(h.requests[0].body.requestId,h.requests[1].body.requestId);assert.equal(h.requests[1].body.email,'corrected@example.com');
+    if(kind==='report')assert.equal(h.requests[1].body.scenario.monthlyContribution,12000);
+    assert.equal(h.events.filter(e=>e.name==='material_accepted').length,1);assert.equal(h.resets.length,2);
+    assert.ok(!JSON.stringify(h.events).includes(h.requests[1].body.requestId));assert.ok(!JSON.stringify(h.events).includes('corrected@example.com'));
+  }
+});
+
+test('demo denial after an uncertain outcome preserves UUID, recipient and scenario, and requires a new token',async()=>{
+  for(const kind of ['report','guide'] as const){
+    const h=harness(true),owner=h.owner();h.context({ready:true,failed:false});h.networkFailure();
+    let currentProps=props(kind);const render=()=>h.render(owner,h.form,currentProps);const submit=()=>h.nodes(owner.tree).find(n=>n.type==='form').props.onSubmit({preventDefault(){}});
+    render();h.instances[0].options.callback('first');render();await submit();render();
+    h.nodes(owner.tree).find(n=>n.props.type==='email').props.ref.current.value='changed@example.com';
+    currentProps={...props(kind),...(kind==='report'?{scenario:{...scenario,monthlyContribution:15000}}:{})};
+    h.networkFailure(false);h.status(403);h.code('demo_not_allowed');await submit();assert.equal(h.requests.length,1);
+    h.instances[0].options.callback('second');render();await submit();render();
+    assert.equal(h.nodes(owner.tree).find(n=>n.props.type==='email').props.disabled,true);assert.ok(JSON.stringify(owner.tree).includes('předchozího pokusu zůstává nejasný'));
+    assert.equal(h.requests[0].body.requestId,h.requests[1].body.requestId);assert.equal(h.requests[0].body.email,h.requests[1].body.email);
+    assert.deepEqual(h.requests[0].body.scenario,h.requests[1].body.scenario);
+    assert.equal(h.events.filter(e=>e.name==='form_error').length,1);assert.equal(h.events.filter(e=>e.name==='material_accepted').length,0);
+    h.status(202);h.code(undefined);h.instances[0].options.callback('third');render();await submit();render();
+    assert.equal(h.requests[2].body.requestId,h.requests[0].body.requestId);assert.equal(h.events.filter(e=>e.name==='material_accepted').length,1);
+  }
+});
+
 test('analytics follows actual form responses: accepted only on 202, retries distinct, no data leakage',async()=>{
   for(const kind of ['report','guide'] as const) {
     const h=harness(true),owner=h.owner();h.context({ready:true,failed:false});

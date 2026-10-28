@@ -89,14 +89,17 @@ export function EmailForm({ id, buttonText, kind, delivery, scenario }: {
         setStatus("success");
         setMessage(`E-mailová služba přijala ${kind === "report" ? "váš report" : "průvodce s PDF přílohou"} k odeslání. Zkontrolujte poštu i spam. Přijetí službou ještě nepotvrzuje doručení.${kind === "report" ? " Výpis používá scénář platný při odeslání formuláře." : ""}`);
       } else {
-        const correctable = response.status === 400 && body?.status === "error" && body?.code === "input_rejected" && !currentRequest.uncertain;
+        const demoDenied = response.status === 403 && body?.status === "error" && body?.code === "demo_not_allowed";
+        const correctable = ((response.status === 400 && body?.status === "error" && body?.code === "input_rejected") || demoDenied) && !currentRequest.uncertain;
         if (correctable) { logicalRequest.current = null; setRetrying(false); }
         else { currentRequest.uncertain = true; setRetrying(true); }
         const conflict = response.status === 503 && body?.status === "error" && body?.code === "request_conflict";
         if (conflict) { currentRequest.blocked = true; setRetryBlocked(true); }
-        completeFormAttempt(measuredAttempt, response.status === 400 ? "validation" : response.status === 403 ? "verification" : response.status === 429 ? "busy" : "server");
+        // Demo eligibility is neither a validation/protection failure nor a conversion.
+        if (!demoDenied) completeFormAttempt(measuredAttempt, response.status === 400 ? "validation" : response.status === 403 ? "verification" : response.status === 429 ? "busy" : "server");
         setStatus("error");
         setMessage(conflict ? "Tuto žádost nelze bezpečně zopakovat. Nejprve ověřte předchozí zaslání nebo kontaktujte správce; neposílejte ji znovu z jiné karty." : response.status === 503 && body?.code === "request_pending" ? "Žádost se ještě zpracovává. Vyčkejte a potom zopakujte stejnou žádost s novým ověřením." : correctable ? "Žádost byla odmítnuta před odesíláním. Opravte e-mail nebo parametry a odešlete novou žádost." : response.status === 400 ? "Tento pokus byl odmítnut, ale předchozí výsledek nelze bezpečně určit. Zachováváme původní žádost; nejprve ověřte předchozí zaslání." : response.status === 403 ? "Ověření proti robotům vypršelo nebo se nezdařilo. Zkuste nové ověření." : response.status === 429 ? "Služba je dočasně vytížená. Zkuste to za chvíli." : "Odeslání nebylo potvrzeno. Zkuste to později; stejné požadavky chráníme proti duplicitnímu odeslání.");
+        if (demoDenied) setMessage(`ETF Kompas je demonstrační projekt. Zasílání materiálů je dostupné pouze předem schváleným příjemcům. Kalkulačku můžete používat bez omezení.${correctable ? " Adresu můžete opravit a podat novou žádost." : " Tento pokus nebyl odeslán, ale výsledek předchozího pokusu zůstává nejasný. Zachováváme původní žádost; nejprve ověřte předchozí zaslání."}`);
       }
     } catch {
       currentRequest.uncertain = true;
@@ -115,10 +118,11 @@ export function EmailForm({ id, buttonText, kind, delivery, scenario }: {
       onPointerDownCapture={() => trackAnalytics({ name: "form_start", material: kind }, `form_start:${kind}`)}
       onInvalidCapture={() => trackAnalytics({ name: "form_error", material: kind, error: "validation" })}
       aria-label={kind === "report" ? "Podrobný report na e-mail" : "Průvodce ETF na e-mail"} aria-busy={status === "pending"}>
+      <p id={`${id}-demo`} className="form-availability"><strong>Demonstrační režim:</strong> report a PDF zasíláme pouze předem schváleným příjemcům. Kalkulačka je dostupná všem.</p>
       <label htmlFor={`${id}-email`}>Váš e-mail <span className="muted">(povinné)</span></label>
       <div className="email-row">
         {/* No name: a native submit without JavaScript cannot put the email in the URL. */}
-        <input ref={emailInput} id={`${id}-email`} type="email" required maxLength={254} autoComplete="email" placeholder="vas@email.cz" aria-invalid={emailError} aria-describedby={`${id}-privacy ${id}-availability ${id}-feedback`} onChange={() => { if (emailError) { setEmailError(false); setMessage(""); } }} disabled={status === "pending" || retrying} />
+        <input ref={emailInput} id={`${id}-email`} type="email" required maxLength={254} autoComplete="email" placeholder="vas@email.cz" aria-invalid={emailError} aria-describedby={`${id}-demo ${id}-privacy ${id}-availability ${id}-feedback`} onChange={() => { if (emailError) { setEmailError(false); setMessage(""); } }} disabled={status === "pending" || retrying} />
         <button type="submit" className="primary-button" disabled={retryBlocked || !delivery.enabled || !ready || failed || !token || status === "pending" || (kind === "report" && !scenario && !retrying)}>{status === "pending" ? "Odesíláme…" : retryBlocked ? "Žádost vyžaduje kontrolu" : retrying ? "Zopakovat stejnou žádost" : buttonText}<span aria-hidden="true">↗</span></button>
       </div>
       <div className="honeypot" aria-hidden="true"><label htmlFor={`${id}-website`}>Webová stránka</label><input ref={trapInput} id={`${id}-website`} name="website" tabIndex={-1} autoComplete="off" maxLength={200} /></div>

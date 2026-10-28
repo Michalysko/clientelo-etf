@@ -1,4 +1,5 @@
 import type { DeliveryConfig } from "./config.ts";
+import { isDemoRecipientAllowed } from "./config.ts";
 import { createGuideEmail, createReport } from "./content.ts";
 import { DeliveryError } from "./providers.ts";
 import type { OutgoingEmail } from "./providers.ts";
@@ -48,7 +49,7 @@ async function readBody(request: Request) {
   catch { throw new RequestError(400); }
 }
 
-type PublicCode = "input_rejected" | "request_pending" | "request_conflict";
+type PublicCode = "input_rejected" | "request_pending" | "request_conflict" | "demo_not_allowed";
 const reply = (status: number, message: string, code?: PublicCode) => Response.json({status: status === 202 ? "accepted" : "error", message, ...(code ? {code} : {})}, {
   status, headers: {"Cache-Control": "no-store", ...(status === 429 ? {"Retry-After": "60"} : {})},
 });
@@ -67,6 +68,7 @@ export function createDeliveryHandler(kind: MaterialKind, deps: Dependencies) {
       const body = validateMaterialRequest(kind, await readBody(request));
       phase = "turnstile";
       if (!await deps.verify(config, body.turnstileToken, kind)) { log("turnstile", new DeliveryError(403, "verification_failed")); return reply(403, "Ověření proti robotům se nezdařilo nebo vypršelo. Zkuste ho znovu."); }
+      if (!isDemoRecipientAllowed(body.email, config.demoAllowedEmails)) return reply(403, "ETF Kompas je demonstrační projekt. Zasílání materiálů je dostupné pouze předem schváleným příjemcům. Kalkulačku můžete používat bez omezení.", "demo_not_allowed");
       phase = "content";
       const content = kind === "report" ? createReport(body.scenario!) : createGuideEmail();
       const outgoing: OutgoingEmail = { ...content, to: body.email, requestId: body.requestId, material: kind };
