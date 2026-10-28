@@ -58,10 +58,10 @@ Whitelist názvů i celých hodnot:
 
 Neznámé i duplicitní parametry se zahodí. Osobní údaje pod známým názvem neprojdou. UTM se vyhodnotí až po souhlasu a kontext držíme jen v paměti povoleného dokumentu. Cesta ad_a → soukromí → holé / jej zachová. Nový explicitní povolený kampanový odkaz ho nahradí. Plné načtení dokumentu, návrat z BFCache, reload nebo odvolání jej zruší. Query-only App Router navigaci sleduje malý useSearchParams observer ve vlastní Suspense hranici; statický obsah stránky zůstává mimo ni. Neplatná explicitní kampanová hodnota přepne kontext na unknown, nepřevezme starou reklamu. Otevření soukromí před prvním souhlasem se zpětně nedoplňuje: pokud při povolení už UTM v dostupné URL není, atribuce zůstane unknown. Kontext se nepřenáší mezi kartami nebo zařízeními. Stejná sanitizovaná URL se používá i na následných událostech; neukládáme čtyři duplicitní event properties. Jediná doplňující `ad_variant=ad_a/ad_b/unknown` usnadňuje porovnání událostí, pokud UTM filtr v konkrétním funnelu nefunguje. Tato fallback vlastnost neznamená, že jsme ověřili ovládání dashboardu. Pokud ani event filtr není v reportu použitelný, porovnat Events přehledy s touto vlastností a uvést, že nejde o filtrovaný sekvenční funnel; neodvozovat falešná čísla.
 
-Odkazy pro budoucí reklamy:
+Výhradní schválené odkazy reklam (potvrzeno vlastníkem 28. 10. 2026):
 
-- A: https://etf-kompas-zeta.vercel.app/?utm_source=meta&utm_medium=paid_social&utm_campaign=clientelo_demo&utm_content=ad_a
-- B: https://etf-kompas-zeta.vercel.app/?utm_source=meta&utm_medium=paid_social&utm_campaign=clientelo_demo&utm_content=ad_b
+- A: https://etf-kompas-zeta.vercel.app/?utm_content=ad_a
+- B: https://etf-kompas-zeta.vercel.app/?utm_content=ad_b
 
 Hypotéza A: sdělení o nákladovosti zvýší zájem o personalizovaný report. Hypotéza B: vzdělávací sdělení zvýší zájem o průvodce. Jsou to návrhy hypotéz, ne hotové reklamy ani výsledky experimentu. Pro férové srovnání držet stejné publikum, období a rozpočet. Bez nákladových dat reklam nelze určit cenu za konverzi.
 
@@ -103,3 +103,9 @@ Není to právní stanovisko ani potvrzení vyřešení dřívějších otevřen
 Původní fragmentový fallback umožňoval po selhání zápisu a obnově storage oživit starý souhlas. Byl odstraněn ve prospěch explicitního povolení v paměti dokumentu. Opraveno také připsání pozdního POST nové kampani, pořadí focus/observer, zachování post-consent kampaně při SPA návratu ze soukromí a expirace při odesílání. Regrese používají fake DOM/React, mock POST a BroadcastChannel; nejde o důkaz chování všech reálných browser profilů. Skutečné oddělené karty, BFCache a omezení storage na mobilním Safari zůstávají ruční kontrolou.
 
 Finální kontroly této opravy: 83/83 testů včetně skutečného vendor trackeru v izolované VM s mock sítí. Bez souboru UMAMI_TRACKER_TEST_FILE se jeden volitelný vendor test standardně přeskočí. Žádné skutečné e-maily ani analytické události nebyly odeslány.
+
+## Audit reklamních variant — 28. 10. 2026
+
+Přesné zadání reklam, schválené URL, konverzní metriky a plán vyhodnocení jsou v [ads-and-conversions.md](ads-and-conversions.md). Vlastník schválil variantu bez změny kódu: vstupní URL parametr je výhradně `utm_content` s hodnotou ad_a nebo ad_b. Z něj kontroler odvodí vlastnost analytické události `ad_variant`; tento název není vstupní URL parametr. Návrh aliasu nebyl vybrán a nečeká na implementaci. Odkazy neobsahují zdroj, medium ani název kampaně; měření varianty tím není omezeno.
+
+Upřesnění interpretace: Umami Funnel vyžaduje pořadí a jeho Window omezuje interval mezi sousedními kroky, nikoli automaticky celou cestu. Kalkulačka je volitelný mezikrok, nesmí vylučovat konverze výchozího scénáře nebo průvodce. `material` mají jen formulářové události; globální filtr materiálu může odstranit landing_view. Možnost filtrovat materiál na jednotlivých krocích a variantu na všech krocích je nutné ověřit v konkrétním účtu. Prosté poměry celkových počtů eventů nejsou náhradou deduplikovaného konverzního funnelu. Aktuální audit neposkytuje výsledky kampaní.
