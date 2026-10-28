@@ -87,3 +87,10 @@ Funnel: landing_view → form_view → form_start → form_submit → material_a
 Budoucí A/B hypotézy: A (nákladovost) může zvýšit konverzi reportu, B (vzdělávání) průvodce. Rozlišení utm_content=ad_a/ad_b a jediná pomocná vlastnost ad_variant. Nejsou to výsledky experimentu. Účet ani reporty nebyly měněny; možnosti filtrování konkrétního funnelu je nutné ručně ověřit, viz dokumentace.
 
 Testy používají fake providery a síť. Volitelný test skutečného vendor trackeru vyžaduje UMAMI_TRACKER_TEST_FILE s dočasným veřejným script.js; spouští jej jen v izolované VM s mock fetch. Bez souboru se tento jeden test přeskočí. Produkční Network a dashboard bude potřeba ověřit po samostatně schváleném deploymentu; tato etapa nic nenasazuje ani neposílá reálné e-maily.
+
+
+## Idempotence jedné žádosti (28. 10. 2026)
+
+Každá nová vědomá žádost má náhodné UUID v4; opakování po nejistém výsledku zachovává stejnou identitu, adresu a scénář. Automatické retry není implementované. Po 202 + accepted lze podat novou žádost s novým UUID, i o stejný PDF průvodce. Po nejistém výsledku použijte „Zopakovat stejnou žádost“, nové Turnstile ověření a neobnovujte stránku: paměť žádosti by se ztratila. Retry je v UI omezeno na 23 hodin; Resend drží klíče 24 hodin. Přijetí není doručení. Nejde o per-email rate limiter; limity Resendu a ochrana Turnstile zůstávají. Technické hranice, bezpečná diagnostika a plán jednoho schváleného produkčního testu: [email-delivery.md](docs/email-delivery.md).
+
+Oprava P2: vlastní validační odmítnutí před odesíláním umožní opravit údaje a vytvořit novou žádost pouze bez historie nejistého výsledku. Po timeoutu zůstává původní identita i po pozdější 400. Trvalý rozpoznaný konflikt zastaví další retry; souběh doporučí vyčkat. Diagnostika rozlišuje i timeout těla odpovědi, chybu streamu, JSON a struktury.

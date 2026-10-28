@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- Minimal isolated React hook harness; no DOM/test dependency or network. */
 import test from 'node:test';
+import { randomUUID } from 'node:crypto';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
@@ -15,9 +16,11 @@ function harness(measured = false) {
   let context = {ready:false,failed:false};
   const instances: any[] = [], removed: string[] = [], resets: string[] = [], requests: any[] = [];
   let responseStatus = 503;
+  let now = Date.now();
   let responseGate: Promise<void> = Promise.resolve();
   let networkFailure = false;
   let acceptedBody = true;
+  let responseCode: string | undefined;
   const api = {
     render: (_element: unknown, options: any) => { const id=`widget-${instances.length}`; instances.push({id,options}); return id; },
     remove: (id: string) => removed.push(id), reset: (id: string) => resets.push(id),
@@ -41,11 +44,11 @@ function harness(measured = false) {
       if (name==='next/link') return {default:'a'};
       if (name in extra) return extra[name];
       throw new Error('Unexpected dependency');
-    },window:{turnstile:api},AbortSignal,fetch:async(url: string,init: any)=>{
+    },window:{turnstile:api,crypto:{randomUUID}},Date:{now:()=>now},AbortSignal,fetch:async(url: string,init: any)=>{
       requests.push({url,body:JSON.parse(init.body)});
       await responseGate;
       if (networkFailure) throw new Error('synthetic network failure');
-      return {status:responseStatus,json:async()=>({status:responseStatus===202 && acceptedBody?'accepted':'error'})};
+      return {status:responseStatus,json:async()=>({status:responseStatus===202 && acceptedBody?'accepted':'error',...(responseCode?{code:responseCode}:{})})};
     }});
     return exports;
   }
@@ -59,8 +62,8 @@ function harness(measured = false) {
   }
   function nodes(tree: any): any[] {return !tree || typeof tree!=='object'?[]:Array.isArray(tree)?tree.flatMap(nodes):[tree,...nodes(tree.props?.children)];}
   return {owner,render,nodes,form:form.EmailForm,provider:provider.TurnstileProvider,instances,removed,resets,requests,events,measurement,
-    context:(value: typeof context)=>{context=value;},status:(value:number)=>{responseStatus=value;},
-    gate:(value:Promise<void>)=>{responseGate=value;},networkFailure:()=>{networkFailure=true;},acceptedBody:(value:boolean)=>{acceptedBody=value;}};
+    code:(value:string|undefined)=>{responseCode=value;},advance:(milliseconds:number)=>{now+=milliseconds;},context:(value: typeof context)=>{context=value;},status:(value:number)=>{responseStatus=value;},
+    gate:(value:Promise<void>)=>{responseGate=value;},networkFailure:(value=true)=>{networkFailure=value;},acceptedBody:(value:boolean)=>{acceptedBody=value;}};
 }
 const delivery={enabled:true,siteKey:'unit-only'};
 const scenario={firstTicker:'SPY',secondTicker:'SPYM',monthlyContribution:5000,years:20,grossAnnualReturnPercent:7,initialInvestment:0};
@@ -223,4 +226,98 @@ test('two mounted forms initialize independently after shared readiness; errors 
   assert.deepEqual(h.removed,['widget-0']);
   h.render(b,h.form,{...props('guide'),delivery:{enabled:false,siteKey:''}});
   assert.deepEqual(h.removed,['widget-0','widget-1']);
+});
+
+
+test('logical request survives timeout with frozen recipient/scenario; success enables a new UUID',async()=>{
+  for(const kind of ['report','guide'] as const){
+    const h=harness(true),owner=h.owner();h.context({ready:true,failed:false});
+    let currentProps=props(kind);const render=()=>h.render(owner,h.form,currentProps);
+    const submit=()=>h.nodes(owner.tree).find(n=>n.type==='form').props.onSubmit({preventDefault(){}});
+    render();h.instances[0].options.callback('first-token');render();h.networkFailure();
+    await submit();render();
+    const first=h.requests[0].body;assert.match(first.requestId,/^[0-9a-f-]{36}$/);
+    assert.ok(JSON.stringify(owner.tree).includes('Zopakovat stejnou žádost'));
+    assert.equal(h.nodes(owner.tree).find(n=>n.props.type==='email').props.disabled,true);
+    currentProps={...props(kind),...(kind==='report'?{scenario:{...scenario,monthlyContribution:10000}}:{})};
+    h.nodes(owner.tree).find(n=>n.props.type==='email').props.ref.current.value='changed@example.com';
+    h.networkFailure(false);h.status(202);h.instances[0].options.callback('new-token');render();await submit();render();
+    const retry=h.requests[1].body;assert.equal(retry.requestId,first.requestId);assert.equal(retry.email,first.email);assert.deepEqual(retry.scenario,first.scenario);assert.notEqual(retry.turnstileToken,first.turnstileToken);
+    h.instances[0].options.callback('third-token');render();await submit();render();
+    assert.notEqual(h.requests[2].body.requestId,first.requestId);
+    assert.equal(h.requests[2].body.email,'changed@example.com');
+    assert.equal(h.events.filter(e=>e.name==='material_accepted').length,2);
+    assert.ok(!JSON.stringify(h.events).includes(first.requestId));assert.ok(!JSON.stringify(h.events).includes('changed@example.com'));
+  }
+});
+
+
+test('ambiguous request older than 23 hours never silently becomes a new send',async()=>{
+  const h=harness(),owner=h.owner();h.context({ready:true,failed:false});
+  const render=()=>h.render(owner,h.form,props('guide'));
+  render();h.instances[0].options.callback('first-token');render();
+  await h.nodes(owner.tree).find(n=>n.type==='form').props.onSubmit({preventDefault(){}});
+  h.advance(23*3600000);h.instances[0].options.callback('fresh-token');render();
+  await h.nodes(owner.tree).find(n=>n.type==='form').props.onSubmit({preventDefault(){}});render();
+  assert.equal(h.requests.length,1);assert.ok(JSON.stringify(owner.tree).includes('příliš stará'));
+});
+
+
+test('first validated rejection unlocks corrections and generates a fresh UUID from current inputs',async()=>{
+  for(const kind of ['guide','report'] as const){
+    const h=harness(true),owner=h.owner();h.context({ready:true,failed:false});h.status(400);h.code('input_rejected');
+    let currentProps=props(kind);const render=()=>h.render(owner,h.form,currentProps);
+    const submit=()=>h.nodes(owner.tree).find(n=>n.type==='form').props.onSubmit({preventDefault(){}});
+    render();h.instances[0].options.callback('first-token');render();await submit();render();
+    assert.equal(h.nodes(owner.tree).find(n=>n.props.type==='email').props.disabled,false);
+    assert.ok(!JSON.stringify(owner.tree).includes('Zopakovat stejnou žádost'));
+    h.nodes(owner.tree).find(n=>n.props.type==='email').props.ref.current.value='corrected@example.com';
+    currentProps={...props(kind),...(kind==='report'?{scenario:{...scenario,monthlyContribution:12000}}:{})};
+    h.status(202);h.code(undefined);h.instances[0].options.callback('second-token');render();
+    let release!:()=>void;h.gate(new Promise<void>(resolve=>{release=resolve;}));
+    const pending=submit();await submit();assert.equal(h.requests.length,2);release();await pending;render();
+    assert.notEqual(h.requests[0].body.requestId,h.requests[1].body.requestId);
+    assert.equal(h.requests[1].body.email,'corrected@example.com');
+    if(kind==='report')assert.equal(h.requests[1].body.scenario.monthlyContribution,12000);
+    assert.equal(h.events.filter(e=>e.name==='material_accepted').length,1);
+  }
+});
+
+test('a marked 400 after an uncertain result never drops the original identity or snapshot',async()=>{
+  for(const failure of ['network','503','202-invalid'] as const){
+    const h=harness(),owner=h.owner();h.context({ready:true,failed:false});
+    let currentProps=props('report');const render=()=>h.render(owner,h.form,currentProps);const submit=()=>h.nodes(owner.tree).find(n=>n.type==='form').props.onSubmit({preventDefault(){}});
+    if(failure==='network')h.networkFailure();if(failure==='202-invalid'){h.status(202);h.acceptedBody(false);}
+    render();h.instances[0].options.callback('first');render();await submit();render();
+    h.nodes(owner.tree).find(n=>n.props.type==='email').props.ref.current.value='changed@example.com';
+    currentProps={...props('report'),scenario:{...scenario,monthlyContribution:15000}};
+    h.networkFailure(false);h.status(400);h.code('input_rejected');h.instances[0].options.callback('second');render();await submit();render();
+    assert.equal(h.nodes(owner.tree).find(n=>n.props.type==='email').props.disabled,true);
+    assert.equal(h.requests[0].body.requestId,h.requests[1].body.requestId);
+    assert.equal(h.requests[1].body.email,h.requests[0].body.email);assert.deepEqual(h.requests[1].body.scenario,h.requests[0].body.scenario);
+    h.instances[0].options.callback('third');render();await submit();
+    assert.equal(h.requests[2].body.requestId,h.requests[0].body.requestId);
+  }
+});
+
+test('an unmarked or malformed 400 is not proof of validation rejection',async()=>{
+  for(const code of [undefined,'arbitrary','request_conflict']){
+    const h=harness(),owner=h.owner();h.context({ready:true,failed:false});h.status(400);h.code(code);
+    const render=()=>h.render(owner,h.form,props('guide'));render();h.instances[0].options.callback('first');render();
+    await h.nodes(owner.tree).find(n=>n.type==='form').props.onSubmit({preventDefault(){}});render();
+    assert.equal(h.nodes(owner.tree).find(n=>n.props.type==='email').props.disabled,true);
+  }
+});
+
+test('concurrent request can be retried; permanent conflict is blocked without rotating identity',async()=>{
+  for(const code of ['request_pending','request_conflict']){
+    const h=harness(true),owner=h.owner();h.context({ready:true,failed:false});h.status(503);h.code(code);
+    const render=()=>h.render(owner,h.form,props('guide'));const submit=()=>h.nodes(owner.tree).find(n=>n.type==='form').props.onSubmit({preventDefault(){}});
+    render();h.instances[0].options.callback('first');render();await submit();render();
+    h.instances[0].options.callback('second');render();
+    assert.equal(h.nodes(owner.tree).find(n=>n.type==='button').props.disabled,code==='request_conflict');
+    await submit();assert.equal(h.requests.length,code==='request_conflict'?1:2);
+    assert.equal(h.events.filter(e=>e.name==='material_accepted').length,0);
+    if(code==='request_pending')assert.equal(h.requests[1].body.requestId,h.requests[0].body.requestId);
+  }
 });

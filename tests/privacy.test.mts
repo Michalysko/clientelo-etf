@@ -37,7 +37,7 @@ function renderPrivacy(contact: ReturnType<typeof privacy.getPrivacyContact>) {
 test("privacy page renders actual processing, unresolved items and rights without third-party widgets", () => {
   const html=renderPrivacy(null);
   for(const phrase of ["Michal Růžička", "nekomerční", "Clientelo", "jednorázově", "K doplnění / ověření", "právní základ", "vlastní databázi kontaktů", "Resend", "Cloudflare", "Vercel", "Pro a Enterprise", "mimo EHP", "Úřadu pro ochranu osobních údajů"]) assert.ok(html.includes(phrase),phrase);
-  assert.match(html, /<time\s+datetime="2026-10-27"/i);
+  assert.match(html, /<time\s+datetime="2026-10-28"/i);
   assert.equal((html.match(/<h1[ >]/g)??[]).length,1);
   assert.ok(html.includes('id="ochrana-obsah"'));
   assert.ok(!html.includes("mailto:"));

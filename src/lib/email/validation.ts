@@ -11,6 +11,7 @@ export interface ReportScenario {
   initialInvestment: 0;
 }
 export interface MaterialRequest {
+  requestId: string;
   email: string;
   website: string;
   turnstileToken: string;
@@ -54,12 +55,13 @@ export function calculateReport(scenario: ReportScenario) {
 
 export function validateMaterialRequest(kind: MaterialKind, raw: unknown): MaterialRequest {
   const body = object(raw);
-  exactKeys(body, kind === "report" ? ["email", "website", "turnstileToken", "scenario"] : ["email", "website", "turnstileToken"]);
+  exactKeys(body, kind === "report" ? ["requestId", "email", "website", "turnstileToken", "scenario"] : ["requestId", "email", "website", "turnstileToken"]);
+  if (typeof body.requestId !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(body.requestId)) throw new InputError();
   if (typeof body.email !== "string") throw new InputError();
   const email = body.email.trim();
   if (!validEmail(email) || typeof body.website !== "string" || body.website.length !== 0 ||
     typeof body.turnstileToken !== "string" || !body.turnstileToken.trim() || body.turnstileToken.length > 2048) throw new InputError();
-  const validated: MaterialRequest = { email, website: "", turnstileToken: body.turnstileToken };
+  const validated: MaterialRequest = { requestId: body.requestId, email, website: "", turnstileToken: body.turnstileToken };
   if (kind === "report") {
     const scenario = object(body.scenario);
     exactKeys(scenario, ["firstTicker", "secondTicker", "monthlyContribution", "years", "grossAnnualReturnPercent", "initialInvestment"]);

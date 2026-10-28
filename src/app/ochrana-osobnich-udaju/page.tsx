@@ -21,7 +21,7 @@ export default function PrivacyPage() {
         <h1>Soukromí v ETF Kompasu</h1>
         <p className="privacy-lead">E-mail pro jeden vyžádaný materiál. Žádný automatický marketing.</p>
         <p>ETF Kompas je osobní, nekomerční demonstrační projekt vytvořený pro výběrové řízení ve společnosti Clientelo. Nejde o komerční investiční službu. Také při provozu tohoto dema ale dochází ke zpracování osobních údajů.</p>
-        <p className="small muted">Poslední aktualizace: <time dateTime={PRIVACY_UPDATED_ON}>27. 10. 2026</time></p>
+        <p className="small muted">Poslední aktualizace: <time dateTime={PRIVACY_UPDATED_ON}>28. 10. 2026</time></p>
       </div>
       <aside className="privacy-notice" aria-labelledby="privacy-draft-title">
         <h2 id="privacy-draft-title">Co ještě zbývá doplnit</h2>
@@ -38,7 +38,7 @@ export default function PrivacyPage() {
       <section id="ucely-a-zaklady" className="privacy-block" aria-labelledby="ucely-title">
         <h2 id="ucely-title">2. Proč údaje zpracováváme a na jakém základě</h2>
         <p>E-mail zadáváte dobrovolně, abychom vám jednorázově doručili vámi vyžádaný personalizovaný HTML report nebo sedmistránkového PDF průvodce. U reportu potřebujeme také parametry scénáře pro serverový přepočet a sestavení zprávy. Základní kalkulačku můžete používat bez zadání e-mailu; bez adresy nemůžeme vyžádaný materiál doručit.</p>
-        <p>Dalším účelem je ochrana formulářů a doručování před roboty, zneužitím a duplicitními požadavky. K tomu slouží Turnstile, technická pole formuláře a identifikátor opakovaného požadavku.</p>
+        <p>Dalším účelem je ochrana formulářů a doručování před roboty, zneužitím a duplicitními požadavky. K tomu slouží Turnstile, technická pole formuláře a náhodný identifikátor jedné žádosti. Identifikátor a původní údaje žádosti si formulář při opakování drží jen v paměti otevřené stránky; neposílá je do analytiky. Pro řešení provozních chyb server zaznamenává pouze druh materiálu, fázi chyby, obecnou kategorii a případně HTTP stav poskytovatele, bez adres, tokenů, obsahu a identifikátorů žádostí.</p>
         <p>Volitelnou analytiku návštěvnosti, používání kalkulačky, formulářů a porovnání reklamních variant zpracováváme na základě vašeho souhlasu. Odmítnutí ani odvolání souhlasu neomezuje kalkulačku nebo zaslání materiálů. Tento souhlas je oddělený od jednorázového doručení a neznamená přihlášení k marketingu.</p>
         <p className="privacy-pending"><strong>K doplnění / ověření — právní základ:</strong> správce musí před veřejným provozem určit a doložit právní základ zvlášť pro doručení materiálu a ochranu formulářů. Samotné kliknutí na zaslání zde nevydáváme za prokázané uzavření smlouvy ani za univerzální souhlas se zpracováním. U ochrany je třeba posoudit nezbytnost a přiměřenost použitých technologií.</p>
         <p><strong>Jednorázové vyžádání materiálu neznamená přihlášení k newsletteru ani ETF Hlídači.</strong> Aplikace žádný takový odběr neaktivuje a nevytváří marketingový seznam.</p>

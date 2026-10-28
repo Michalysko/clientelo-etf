@@ -75,3 +75,10 @@ Tento dodatek nahrazuje starší popis persistentního povolení a fragmentovéh
 BroadcastChannel předává jen konstantní zprávu denied mezi kartami stejného originu a doplňuje storage události. Nepřenáší grant, kampaň, osobní údaje ani návštěvnický identifikátor. Izolované karty při blokaci obou kanálů a zápisu nelze spolehlivě okamžitě informovat; musí být odvolány zvlášť nebo zavřeny. Žádná nová stránka však nesmí automaticky obnovit staré povolení.
 
 Atribuce zůstává jen v paměti až po souhlasu. Dokončení starého POST se po změně vstupu zahodí; konverze neputuje k jiné kampani. Žádné nové údaje v serverových API ani analytické identifikátory. Fokus se nejprve podrží do potvrzení skutečné viditelnosti observerem. Dřívější smluvní a právní otevřené otázky zůstávají beze změny. Detailní limity a testy: docs/analytics.md.
+
+
+## Aktualizace idempotence a diagnostiky — 28. 10. 2026
+
+Nahrazuje dřívější popis obsahového HMAC a absence aplikačních logů: formulář nyní vytvoří UUID jedné žádosti, držené jen v paměti se snímkem příjemce a případného scénáře. Server je validuje a odvodí materiálově oddělený HMAC klíč Resendu. Není to návštěvnické ID a neposílá se do Umami ani aplikačních diagnostických logů. Provider nadále dostává příjemce i obsah pro doručení; při retry porovnává shodu celého payloadu. Server loguje výhradně allowlist material/phase/code/providerStatus, bez osobních údajů, tokenů a klíčů. Infrastruktura může mít vlastní logy; jejich retence zůstává k ověření. Nezměněna souhlasová lišta ani právní základ analytiky. Podrobnosti a hranice: email-delivery.md.
+
+Cílená oprava P2 dne 28. 10. 2026 přidává do odpovědí API jen pevné veřejné instrukce input_rejected/request_pending/request_conflict, nikoli interní diagnostiku. Stav uncertain a blokace konfliktu zůstávají pouze v paměti žádosti a neposílají se do Umami. Bez nových osobních údajů nebo úložišť. Diagnostické kategorie nově rozlišují neplatný JSON od neočekávané struktury a zahrnují i čtení těla odpovědi.

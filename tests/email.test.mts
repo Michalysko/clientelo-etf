@@ -11,7 +11,8 @@ import { compareInvestments } from "../src/lib/investment.ts";
 // Explicit fakes only. Never load .env.local or call a provider in this suite.
 const config = {apiKey: "unit-test-only", from: "ETF Kompas <unit@etf.michalwebdeveloper.cz>", turnstileSecret: "unit-test-only", siteKey: "unit-test-only", origin: "https://example.com"};
 const scenario = {firstTicker: "SPY", secondTicker: "SPYM", monthlyContribution: 5000, years: 20, grossAnnualReturnPercent: 7, initialInvestment: 0 as const};
-const payload = {email: "reader@example.com", website: "", turnstileToken: "unit-token", scenario};
+const requestId = "12345678-1234-4234-8234-123456789abc";
+const payload = {requestId, email: "reader@example.com", website: "", turnstileToken: "unit-token", scenario};
 function request(body: unknown = payload, headers: Record<string, string> = {}) {
   return new Request("https://example.com/api/materials/report", {method: "POST", headers: {origin: config.origin, "Content-Type": "application/json", ...headers}, body: JSON.stringify(body)});
 }
@@ -23,6 +24,7 @@ function harness(overrides: Record<string, unknown> = {}, kind: "report" | "guid
     verify: async () => { verified++; return true; },
     send: async (_config, email) => { sent.push(email); },
     guide: async () => Buffer.from("%PDF-unit-test"),
+    log: () => {},
     ...overrides,
   });
   return {handler, sent, verified: () => verified};
@@ -40,7 +42,7 @@ test("honeypot and overlong/empty Turnstile token are rejected", () => {
   for (const body of [{...payload, website:"spam"},{...payload, turnstileToken:""},{...payload, turnstileToken:"a".repeat(2049)}]) assert.throws(() => validateMaterialRequest("report",body));
 });
 test("guide accepts only its own contract", () => {
-  const guide = {email:payload.email,website:"",turnstileToken:payload.turnstileToken};
+  const guide = {requestId,email:payload.email,website:"",turnstileToken:payload.turnstileToken};
   assert.equal(validateMaterialRequest("guide",guide).scenario, undefined);
   assert.throws(() => validateMaterialRequest("guide",payload));
 });
@@ -84,7 +86,7 @@ test("handler returns accepted only after the mocked service resolves", async ()
 });
 test("guide is a private PDF attachment, no public download URL", async () => {
   const h=harness({},"guide");
-  const response=await h.handler(request({email:payload.email,website:"",turnstileToken:"unit-token"}));
+  const response=await h.handler(request({requestId,email:payload.email,website:"",turnstileToken:"unit-token"}));
   assert.equal(response.status,202);
   assert.ok(Buffer.isBuffer((h.sent[0] as {attachment:Buffer}).attachment));
   assert.ok(!(await response.text()).includes(".pdf"));
@@ -139,7 +141,7 @@ test("provider throttling and missing/oversize PDF fail safely", async () => {
   assert.equal(throttled.status,429); assert.equal(throttled.headers.get("Retry-After"),"60");
   for (const guide of [async()=>{throw new Error("private path");},async()=>Buffer.from("not a PDF"),async()=>Buffer.alloc(2*1024*1024+1)]) {
     const h=harness({guide},"guide");
-    assert.equal((await h.handler(request({email:payload.email,website:"",turnstileToken:"unit-token"}))).status,503);
+    assert.equal((await h.handler(request({requestId,email:payload.email,website:"",turnstileToken:"unit-token"}))).status,503);
     assert.equal(h.sent.length,0);
   }
 });
@@ -152,7 +154,7 @@ test("Turnstile verifies success, exact hostname and action using mocked fetch",
 
 test("both material handlers fail closed before sending for invalid input or verification failure", async () => {
   for (const kind of ["report","guide"] as const) {
-    const input=kind === "report" ? payload : {email:payload.email,website:"",turnstileToken:payload.turnstileToken};
+    const input=kind === "report" ? payload : {requestId,email:payload.email,website:"",turnstileToken:payload.turnstileToken};
     for (const invalid of [{...input,email:""},{...input,email:"not-an-email"},{...input,website:"bot"},{...input,turnstileToken:""}]) {
       const h=harness({},kind);assert.equal((await h.handler(request(invalid))).status,400);
       assert.equal(h.verified(),0);assert.equal(h.sent.length,0);
@@ -165,7 +167,7 @@ test("both material handlers fail closed before sending for invalid input or ver
   }
 });
 test("Resend adapter uses multipart alternatives, attachment and deterministic private idempotency", async () => {
-  const email={...createGuideEmail(),to:payload.email,attachment:Buffer.from("%PDF-test")};
+  const email={...createGuideEmail(),requestId,material:"guide" as const,to:payload.email,attachment:Buffer.from("%PDF-test")};
   let calls=0;
   const mock: typeof fetch=async(url,init)=>{
     calls++; assert.equal(url,"https://api.resend.com/emails");
@@ -179,12 +181,12 @@ test("Resend adapter uses multipart alternatives, attachment and deterministic p
   };
   await sendResend(config,email,mock); assert.equal(calls,1);
   assert.equal(resendIdempotencyKey(config,email),resendIdempotencyKey(config,{...email}));
-  assert.notEqual(resendIdempotencyKey(config,email),resendIdempotencyKey(config,{...email,to:"other@example.com"}));
-  assert.notEqual(resendIdempotencyKey(config,email),resendIdempotencyKey(config,{...email,text:"changed"}));
-  assert.notEqual(resendIdempotencyKey(config,email),resendIdempotencyKey(config,{...email,attachment:Buffer.from("%PDF-updated")}));
+  assert.equal(resendIdempotencyKey(config,email),resendIdempotencyKey(config,{...email,to:"other@example.com"}));
+  assert.equal(resendIdempotencyKey(config,email),resendIdempotencyKey(config,{...email,text:"changed"}));
+  assert.equal(resendIdempotencyKey(config,email),resendIdempotencyKey(config,{...email,attachment:Buffer.from("%PDF-updated")}));
 });
 test("Resend adapter rejects missing acknowledgement, errors and network failures", async () => {
-  const email={...createGuideEmail(),to:payload.email};
+  const email={...createGuideEmail(),requestId,material:"guide" as const,to:payload.email};
   for (const mock of [async()=>Response.json({}),async()=>new Response("provider details",{status:500}),async()=>{throw new Error("network");}]) await assert.rejects(()=>sendResend(config,email,mock));
 });
 test("configuration requires protection and approved sender; no test-key bypass", () => {
