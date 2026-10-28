@@ -132,7 +132,7 @@ Doložené chyby a rozhodnutí zahrnují:
 - Obsahová idempotence nerozlišovala novou žádost o stejný materiál: nahrazena UUID jedné logické žádosti, zachováním identity při nejistém výsledku a bezpečnou diagnostikou. Původní produkční HTTP 503 tím nebyla definitivně vysvětlena.
 - První validační HTTP 400 zamykala opravu údajů; timeout při čtení těla odpovědi byl chybně klasifikován. Obojí opraveno a pokryto regresními testy.
 
-Podklady, rozhodnutí, příkazy a hranice ověření jsou v [ai-log/](ai-log/README.md). Současné pracovní souhrny nelze zaměňovat za autentické exporty konverzací; README neprohlašuje požadavek těchto exportů za splněný.
+Podklady, rozhodnutí, příkazy a hranice ověření jsou v [ai-log/](ai-log/README.md). Redigovaný autentický přepis 302 položek je již dostupný v [ai-log/exports/](ai-log/exports/README.md), včetně indexu zpráv a kontroly úplnosti. Pracovní souhrny jsou vedeny odděleně od autentického přepisu.
 
 ## Omezení dema a soukromí
 
