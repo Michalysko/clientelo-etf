@@ -8,4 +8,4 @@ Tato složka slouží k doložení skutečné práce s AI na projektu ETF Kompas
 - Shrnutí provedených kroků vedeme odděleně od exportů. Uvádíme skutečné příkazy, ověření, výsledky a chyby; shrnutí není autentický přepis konverzace.
 - Exporty ukládáme až po jejich skutečném získání. Dokud export chybí, výslovně to uvedeme a nevytváříme zástupný přepis.
 
-První technický záznam je v [setup.md](setup.md). Autentický export úvodní konverzace zatím nebyl uložen.
+První technický záznam je v [setup.md](setup.md). Redigovaný autentický přepis vývoje najdete v [exports/README.md](exports/README.md), včetně indexu zpráv a kontroly úplnosti.
